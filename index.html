@@ -342,7 +342,10 @@ table.xl th{white-space:nowrap}
 .devfoot .df-c{font-size:12px;color:var(--muted);margin-top:6px}table.xl td{height:1px}
 table.xl select.ed{min-width:156px}
 .kpi .l{padding-right:20px}
-</style>
+.devfoot{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 16px;padding:12px 18px;margin-top:10px;border:0;border-radius:12px;background:linear-gradient(90deg,#0a1238,#101c4d 50%,#0a1238);color:#c3cdee;font-size:12.5px;line-height:1.5;text-align:center}
+.devfoot b{color:#fff;font-weight:700}
+.devfoot .df-sep{width:1px;height:14px;background:rgba(255,255,255,.28)}
+@media(max-width:760px){.devfoot .df-sep{display:none}}</style>
 
 <div class="wrap">
   <header class="hero">
@@ -418,7 +421,7 @@ table.xl select.ed{min-width:156px}
       <p class="note"><b>Edição estilo Excel:</b> clique numa célula e digite. <b>Enter</b> desce, <b>Tab</b> vai para a direita, <b>Ctrl+D</b> copia a célula de cima, e dá para <b>colar direto do Excel</b> (várias células de uma vez). As alterações ficam salvas neste navegador; use Exportar para compartilhar a lista atualizada.<br>Previsão vencida: a data de entrega informada no pedido já passou e o recebimento não foi confirmado. Confirme com o comprador e atualize o status.</p>
     </section>
   </div>
-  <footer class="devfoot"><span class="df-k">Desenvolvido por</span><strong>Cleidson de Melo</strong><span class="df-c">© GRUPO CMA — Todos os direitos reservados</span></footer>
+  <footer class="devfoot"><span>Desenvolvido por <b>Cleidson de Melo</b> — Coordenador de Planejamento</span><i class="df-sep"></i><span>Planejamento à Vista — Cluster 8</span><i class="df-sep"></i><span>© Grupo CMA — Todos os direitos reservados. Proibida a reprodução sem autorização.</span></footer>
 </div>
 
 <div class="toast" id="toast" role="status" hidden></div>
@@ -988,7 +991,7 @@ async function exportExcel(){
   const last=HR+d.rows.length;
   ws.autoFilter={from:{row:HR,column:1},to:{row:HR,column:n}};
   ws.mergeCells(last+2,1,last+2,n);
-  const f=ws.getCell(last+2,1); f.value='Gerado em '+nowStr()+'  ·  Sistema de Pendências WI  ·  Desenvolvido por Cleidson de Melo  ·  © GRUPO CMA'; f.font={name:'Calibri',size:9,italic:true,color:{argb:'FF8B97B3'}}; f.alignment={horizontal:'left',indent:1};
+  const f=ws.getCell(last+2,1); f.value='Gerado em '+nowStr()+'  ·  Sistema de Pendências WI  ·  Desenvolvido por Cleidson de Melo — Coordenador de Planejamento  ·  Planejamento à Vista — Cluster 8  ·  © Grupo CMA'; f.font={name:'Calibri',size:9,italic:true,color:{argb:'FF8B97B3'}}; f.alignment={horizontal:'left',indent:1};
   const buf=await wb.xlsx.writeBuffer();
   await saveBlob(d.file+'.xlsx', new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
 }
@@ -1038,7 +1041,7 @@ function exportPdf(){
   const pages=doc.internal.getNumberOfPages();
   for(let i=1;i<=pages;i++){ doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(139,151,179);
     doc.setDrawColor(217,223,236); doc.line(M,202,W-M,202);
-    doc.text('Sistema de Pendências WI  ·  Desenvolvido por Cleidson de Melo  ·  © GRUPO CMA',M,206); doc.text('Página '+i+' de '+pages,W-M,206,{align:'right'}); }
+    doc.text('Sistema de Pendências WI  ·  Desenvolvido por Cleidson de Melo — Coordenador de Planejamento  ·  Planejamento à Vista — Cluster 8  ·  © Grupo CMA',M,206); doc.text('Página '+i+' de '+pages,W-M,206,{align:'right'}); }
   const blob=doc.output('blob');
   return saveBlob(d.file+'.pdf',blob);
 }
