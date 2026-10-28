@@ -378,7 +378,7 @@ table.xl select.ed{min-width:156px}
 .msi:hover{background:var(--accent-soft)}
 .msi input{width:16px;height:16px;accent-color:var(--accent);margin:0}
 .msi em{font-style:normal;font-size:12px;color:var(--muted);font-weight:600}
-.mse{padding:10px;color:var(--muted);font-size:13px}@media (min-width:1180px){ .kpis.k1{grid-template-columns:minmax(205px,1.5fr) repeat(6,minmax(0,1fr))} }
+.mse{padding:10px;color:var(--muted);font-size:13px}@media (min-width:1180px){ .kpis.k1{grid-template-columns:repeat(6,minmax(0,1fr))} }
 .kpi.comp{cursor:default;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--accent-soft),var(--surface));border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
 .kpi.comp:hover{transform:none;box-shadow:none}
 .kpi.comp::before{display:none}
@@ -391,7 +391,9 @@ table.xl select.ed{min-width:156px}
 .hpct .hpn small{font-size:34px;margin-left:2px}
 .hpct .hpl{font:600 11px var(--body);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;opacity:.95}
 .hpct .hps{font:500 12px var(--body);opacity:.82;margin-top:3px}
-@media(max-width:700px){header.hero>.hpct{position:static;margin-top:10px;align-items:flex-start;text-align:left;color:var(--hero-ink);text-shadow:none}.hpct .hpn{text-shadow:none}}</style>
+@media(max-width:700px){header.hero>.hpct{position:static;margin-top:10px;align-items:flex-start;text-align:left;color:var(--hero-ink);text-shadow:none}.hpct .hpn{text-shadow:none}}.kpi.comp{cursor:pointer;display:block;text-align:left}
+.kpi.comp::before{display:block;background:var(--accent)}
+.kpi.comp .tot{font:700 46px/1 var(--display);color:var(--accent);margin-top:4px}</style>
 
 <div class="wrap">
   <header class="hero">
@@ -538,7 +540,6 @@ function renderKpis(){
   const pct=Math.round(done/act.length*100);
   const go=(k,v)=>()=>{ AB=false; setF(k,v); };
   const K=[
-    ['Total de pendências',DATA.length,`${done} + ${canc} + ${late} + ${nxt} + ${rest}`,'blue',()=>{ AB=false; MON=null; Object.keys(F).forEach(k=>F[k]=''); shown=60; syncControls(); renderTable(); }],
     ['Concluídas',done,'encerradas','ok',go('st','Concluída')],
     ['Canceladas',canc,'fora do avanço','',go('st','CANCELADO')],
     ['Vencidas',late,'abertas com prazo anterior a hoje',late?'bad':'ok',go('pz','late')],
@@ -551,7 +552,7 @@ function renderKpis(){
     ['Classe A/B',crit,'das em aberto · impedem comissionar ou partir',crit?'bad':'ok',()=>{ F.st=''; F.pz=''; F.cl=''; F.q=''; AB=true; shown=60; syncControls(); renderTable(); }],
     ['Prioridade alta',alta,'das em aberto',alta?'warn':'',go('pr','Alta')]];
   const draw=(id,list)=>{ $(id).innerHTML=list.map((k,i)=>`<button class="kpi ${k[3]}" data-i="${i}" type="button"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="c">${k[2]}</div></button>`).join(''); $(id).querySelectorAll('.kpi').forEach(b=>b.onclick=list[+b.dataset.i][4]); };
-  draw('kpis',K); $('kpis').insertAdjacentHTML('afterbegin',compCard());
+  draw('kpis',K); $('kpis').insertAdjacentHTML('afterbegin',compCard()); $('kpiTotal').onclick=()=>{ AB=false; MON=null; Object.keys(F).forEach(k=>F[k]=''); shown=60; syncControls(); renderTable(); };
 }
 let AB=false;
 
@@ -1266,9 +1267,7 @@ function renderRecon(){
   $('recon').innerHTML=`<div class="eq">${t(open.length,'em aberto','tot')}${op('=')}${t(late,'vencidas')}${op('+')}${t(soon,'vencem em 7 dias')}${op('+')}${t(rest,'demais')}${op('=')}${t(and,'em andamento')}${op('+')}${t(ni,'não iniciadas')}</div>`;
 }
 function compCard(){
-  const act=DATA.filter(r=>r.st!=='CANCELADO'), canc=DATA.length-act.length, done=act.filter(r=>r.st==='Concluída').length, open=DATA.filter(OPEN);
-  const late=open.filter(LATE).length, soon=open.filter(r=>!LATE(r)&&r.prazo&&r.prazo<=TODAY+7).length, rest=open.length-late-soon;
-  return `<div class="kpi comp"><div class="l">Composição do total</div><div class="tot">${DATA.length}<small> pendências</small></div><ul><li><span>=</span> <b>${done}</b> concluídas</li><li><span>+</span> <b>${canc}</b> canceladas</li><li><span>+</span> <b>${late}</b> vencidas</li><li><span>+</span> <b>${soon}</b> vencem em 7 dias</li><li><span>+</span> <b>${rest}</b> demais em aberto</li></ul></div>`;
+  return `<button type="button" class="kpi comp" id="kpiTotal"><div class="l">Total de pendências</div><div class="tot">${DATA.length}</div><div class="c">todas as pendências da lista</div></button>`;
 }
 /* ---------- filtros com caixas de seleção (varias opcoes) ---------- */
 function selArr(v){ return Array.isArray(v)?v:(v?[v]:[]); }
