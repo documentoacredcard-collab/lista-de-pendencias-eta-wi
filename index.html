@@ -470,7 +470,12 @@ tr.r:hover td{background-color:color-mix(in srgb,var(--accent) 5%,transparent)}
 .dwrap.t-ok b{color:var(--ok)}.dwrap.t-warn b{color:var(--warn)}.dwrap.t-bad b{color:var(--bad)}.dwrap.t-idle b{color:var(--muted);font-size:16px}td.stc{text-align:center;padding-bottom:4px}
 .stnote{margin-top:2px;line-height:1.2}
 .sn{display:inline-block;font:600 11px var(--body);padding:2px 6px;border-radius:6px}
-.sn.bad{color:var(--bad);background:var(--bad-soft)}.sn.warn{color:var(--warn);background:var(--warn-soft)}.sn.ok{color:var(--ok);background:var(--ok-soft)}.sn.idle{color:var(--muted);background:var(--idle-soft)}</style>
+.sn.bad{color:var(--bad);background:var(--bad-soft)}.sn.warn{color:var(--warn);background:var(--warn-soft)}.sn.ok{color:var(--ok);background:var(--ok-soft)}.sn.idle{color:var(--muted);background:var(--idle-soft)}body,button,input,select,textarea,option,th,td,svg text,.tag,.sn,.note,.toast,.msp,.menulist{text-transform:uppercase}
+#url,#url::placeholder{text-transform:none}
+input[type=date]{text-transform:uppercase}.prow{grid-template-columns:160px 1fr 84px}
+.prow.person{grid-template-columns:30px 128px 1fr 84px}
+.pname{font-size:13px}
+</style>
 
 <div class="wrap">
   <header class="hero">
@@ -1041,7 +1046,8 @@ function heroInfo(comp){
   else { const a=DATA.filter(r=>r.st!=='CANCELADO'), d=a.filter(r=>r.st==='Concluída').length; pct=pctOf(d,a.length); l1='AVANÇO'; }
   return {pct,l1,falta:100-pct,sub:'Água clarificada, EEAT, Adutora Azulão e sistemas associados · ETAM / ENEVA'};
 }
-function buildData(comp){
+function buildData(comp){ const d=buildData0(comp), U=x=>typeof x==='string'?x.toUpperCase():x; d.title=U(d.title); d.filters=U(d.filters); d.stamp=U(d.stamp); d.hero.l1=U(d.hero.l1); d.hero.sub=U(d.hero.sub); d.kpis=d.kpis.map(k=>[U(k[0]),k[1],k[2]]); d.cols=d.cols.map(c=>[c[0],U(c[1])].concat(c.slice(2))); d.rows=d.rows.map(r=>r.map(U)); return d; }
+function buildData0(comp){
   const stamp='Posição em '+fmtD(TODAY);
   if(comp){
     const rows=cRows(), n=rows.length;
