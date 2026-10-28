@@ -492,8 +492,8 @@ function renderKpis(){
   const nxt = DATA.filter(r=>OPEN(r)&&r.prazo&&r.prazo>=TODAY&&r.prazo<=TODAY+7).length;
   const pct = Math.round(done/act.length*100);
   const K = [
-    ['Total de pendências', DATA.length, ` ativas · ${DATA.length-act.length} canceladas`, 'blue', ()=>{ AB=false; MON=null; Object.keys(F).forEach(k=>F[k]=''); shown=100000; syncControls(); renderTable(); }],
     ['Avanço', pct+'%', `${done} de ${act.length} ativas (sem canceladas)`, 'ok', ()=>setF('st','Concluída')],
+    ['Total de pendências', DATA.length, ` ativas · ${DATA.length-act.length} canceladas`, 'blue', ()=>{ AB=false; MON=null; Object.keys(F).forEach(k=>F[k]=''); shown=100000; syncControls(); renderTable(); }],
     ['Em aberto', act.length-done, `${and} em andamento · ${ni} não iniciadas`, '', ()=>{F.st='';F.pz='';setF('st','')}],
     ['Vencidas', late, 'abertas com prazo anterior a hoje', late?'bad':'ok', ()=>setF('pz','late')],
     ['Vencem em 7 dias', nxt, 'prazo entre hoje e 03/11', nxt?'warn':'', ()=>setF('pz','7')],
