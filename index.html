@@ -350,7 +350,12 @@ table.xl select.ed{min-width:156px}
 .recon{display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px;padding:10px 16px;border:1px dashed var(--line);border-radius:12px;font-size:13px;color:var(--muted)}
 .recon b{color:var(--ink);font-weight:700}
 .recon .hl{background:var(--accent-soft);padding:2px 10px;border-radius:999px}
-.recon .rsep{width:1px;height:16px;background:var(--line);margin:0 8px}</style>
+.recon .rsep{width:1px;height:16px;background:var(--line);margin:0 8px}.recon{flex-direction:column;align-items:flex-start;gap:6px;padding:12px 16px}
+.recon .eq{display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px}
+.recon .tot{background:var(--accent-soft);padding:2px 10px;border-radius:999px}
+.recon .op{color:var(--muted);font-weight:600}
+.sublabel{font:600 11.5px var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:4px 4px -4px}
+.kpis2 .kpi{padding:10px 14px}.kpis2 .kpi .v{font-size:34px}</style>
 
 <div class="wrap">
   <header class="hero">
@@ -378,6 +383,8 @@ table.xl select.ed{min-width:156px}
   <div class="view" id="v-pend">
   <section class="kpis" id="kpis"></section>
   <div class="recon" id="recon"></div>
+  <div class="sublabel">Detalhe das pendências em aberto</div>
+  <section class="kpis kpis2" id="kpis2"></section>
 
   <section class="grid">
     <div class="card c4"><h2>Situação geral</h2><div class="donutwrap" id="donut"></div></div>
@@ -393,7 +400,7 @@ table.xl select.ed{min-width:156px}
       <input type="search" id="q" placeholder="Buscar por texto, sistema, TAG, ID…" aria-label="Buscar">
       <select id="fDisc" aria-label="Disciplina"></select>
       <select id="fSt" aria-label="Status"></select>
-      <select id="fPz" aria-label="Prazo"><option value="">Prazo: todos</option><option value="late">Vencidas</option><option value="7">Vencem em 7 dias</option><option value="30">Vencem em 30 dias</option><option value="none">Sem prazo</option><option value="rest">Demais em aberto</option></select>
+      <select id="fPz" aria-label="Prazo"><option value="">Prazo: todos</option><option value="late">Vencidas</option><option value="7">Vencem em 7 dias</option><option value="30">Vencem em 30 dias</option><option value="none">Sem prazo</option><option value="rest">Demais em aberto</option><option value="open">Todas em aberto</option></select>
       <select id="fCl" aria-label="Classificação"></select>
       <select id="fPr" aria-label="Prioridade"></select>
       <select id="fRe" aria-label="Responsável"></select>
@@ -487,31 +494,31 @@ fill('fRe','Responsável: todos',[...new Set(DATA.map(respKey))].sort((a,b)=>a.l
 function setF(k,v){ AB=false; MON=null; F[k]=v; shown=100000; syncControls(); renderTable(); window.scrollTo?.({top:$('q').getBoundingClientRect().top+scrollY-80,behavior:'smooth'}); }
 function syncControls(){ $('q').value=F.q; $('fDisc').value=F.disc; $('fSt').value=F.st; $('fPz').value=F.pz; $('fCl').value=F.cl; $('fPr').value=F.pr; $('fRe').value=F.re; }
 
-function renderKpis(){ renderRecon();
-  const act = DATA.filter(r=>r.st!=='CANCELADO');
-  const done = act.filter(r=>r.st==='Concluída').length;
-  const and = act.filter(r=>r.st==='Em andamento').length;
-  const ni = act.filter(r=>r.st==='Não iniciada').length;
-  const late = DATA.filter(LATE).length;
-  const crit = DATA.filter(r=>OPEN(r)&&(r.cls==='A'||r.cls==='B')).length;
-  const alta = DATA.filter(r=>OPEN(r)&&r.pri==='Alta').length;
-  const nxt = DATA.filter(r=>OPEN(r)&&r.prazo&&r.prazo>=TODAY&&r.prazo<=TODAY+7).length;
-  const rest = (act.length-done) - late - nxt;
-  const pct = Math.round(done/act.length*100);
-  const K = [
-    ['Avanço', pct+'%', `${done} de ${act.length} ativas (sem canceladas)`, 'ok', ()=>setF('st','Concluída')],
-    ['Total de pendências', DATA.length, `${act.length} ativas · ${DATA.length-act.length} canceladas`, 'blue', ()=>{ AB=false; MON=null; Object.keys(F).forEach(k=>F[k]=''); shown=100000; syncControls(); renderTable(); }],
-    ['Em aberto', act.length-done, `${and} em andamento · ${ni} não iniciadas`, '', ()=>{F.st='';F.pz='';setF('st','')}],
-    ['Vencidas', late, 'abertas com prazo anterior a hoje', late?'bad':'ok', ()=>setF('pz','late')],
-    ['Vencem em 7 dias', nxt, 'prazo entre hoje e 03/11', nxt?'warn':'', ()=>setF('pz','7')],
-    ['Demais em aberto', rest, 'prazo após 7 dias ou sem prazo', '', ()=>setF('pz','rest')],
-    ['Classe A/B abertas', crit, 'das em aberto · impedem comissionar ou partir', crit?'bad':'ok', ()=>{F.cl='';setF('q','')}],
-    ['Prioridade alta', alta, 'das em aberto', alta?'warn':'', ()=>setF('pr','Alta')],
-  ];
-  $('kpis').innerHTML = K.map((k,i)=>`<button class="kpi ${k[3]}" data-i="${i}" type="button"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="c">${k[2]}</div></button>`).join('');
-  $('kpis').querySelectorAll('.kpi').forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(i===6){ F.cl=''; F.st=''; F.q=''; F.pz='';
-      F.cl=''; // filtra A e B manualmente
-      AB=true; shown=100000; syncControls(); renderTable(); } else { AB=false; K[i][4](); } });
+function renderKpis(){
+  renderRecon();
+  const act=DATA.filter(r=>r.st!=='CANCELADO'), canc=DATA.length-act.length;
+  const done=act.filter(r=>r.st==='Concluída').length, and=act.filter(r=>r.st==='Em andamento').length, ni=act.filter(r=>r.st==='Não iniciada').length;
+  const open=act.length-done, late=DATA.filter(LATE).length;
+  const nxt=DATA.filter(r=>OPEN(r)&&r.prazo&&r.prazo>=TODAY&&r.prazo<=TODAY+7).length, rest=open-late-nxt;
+  const crit=DATA.filter(r=>OPEN(r)&&(r.cls==='A'||r.cls==='B')).length, alta=DATA.filter(r=>OPEN(r)&&r.pri==='Alta').length;
+  const pct=Math.round(done/act.length*100);
+  const go=(k,v)=>()=>{ AB=false; setF(k,v); };
+  const K=[
+    ['Avanço',pct+'%',`${done} de ${act.length} ativas (sem canceladas)`,'ok',go('st','Concluída')],
+    ['Total de pendências',DATA.length,`${done} + ${canc} + ${late} + ${nxt} + ${rest}`,'blue',()=>{ AB=false; MON=null; Object.keys(F).forEach(k=>F[k]=''); shown=100000; syncControls(); renderTable(); }],
+    ['Concluídas',done,'encerradas','ok',go('st','Concluída')],
+    ['Canceladas',canc,'fora do avanço','',go('st','CANCELADO')],
+    ['Vencidas',late,'abertas com prazo anterior a hoje',late?'bad':'ok',go('pz','late')],
+    ['Vencem em 7 dias',nxt,'prazo entre hoje e 03/11',nxt?'warn':'',go('pz','7')],
+    ['Demais em aberto',rest,'prazo após 7 dias ou sem prazo','',go('pz','rest')]];
+  const K2=[
+    ['Em aberto',open,`${and} em andamento + ${ni} não iniciadas`,'',go('pz','open')],
+    ['Em andamento',and,'das em aberto','',go('st','Em andamento')],
+    ['Não iniciadas',ni,'das em aberto','',go('st','Não iniciada')],
+    ['Classe A/B',crit,'das em aberto · impedem comissionar ou partir',crit?'bad':'ok',()=>{ F.st=''; F.pz=''; F.cl=''; F.q=''; AB=true; shown=100000; syncControls(); renderTable(); }],
+    ['Prioridade alta',alta,'das em aberto',alta?'warn':'',go('pr','Alta')]];
+  const draw=(id,list)=>{ $(id).innerHTML=list.map((k,i)=>`<button class="kpi ${k[3]}" data-i="${i}" type="button"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="c">${k[2]}</div></button>`).join(''); $(id).querySelectorAll('.kpi').forEach(b=>b.onclick=list[+b.dataset.i][4]); };
+  draw('kpis',K); draw('kpis2',K2);
 }
 let AB=false;
 
@@ -576,6 +583,7 @@ function filtered(){
     if(F.pz==='7'&&!(OPEN(r)&&r.prazo>=TODAY&&r.prazo<=TODAY+7)) return false;
     if(F.pz==='30'&&!(OPEN(r)&&r.prazo>=TODAY&&r.prazo<=TODAY+30)) return false;
     if(F.pz==='none'&&r.prazo) return false;
+    if(F.pz==='open'&&!OPEN(r)) return false;
     if(F.pz==='rest'&&!(OPEN(r)&&!LATE(r)&&!(r.prazo&&r.prazo<=TODAY+7))) return false;
     if(q){ const h=norm([r.id,r.disc,r.pend,r.sis,r.rm,r.tag,r.rc,r.ri,r.etam,r.eneva,r.ce].join(' ')); if(!h.includes(q)) return false; }
     return true;
@@ -930,7 +938,7 @@ function buildData(comp){
   const rows=filtered().slice().sort((a,b)=>a.id-b.id), n=rows.length;
   const dn=rows.filter(r=>r.st==='Concluída').length, ab=rows.filter(OPEN).length, ve=rows.filter(LATE).length, cr=rows.filter(r=>OPEN(r)&&(r.cls==='A'||r.cls==='B')).length;
   const f=[]; if(F.disc)f.push('Disciplina: '+F.disc); if(F.st)f.push('Status: '+F.st); if(F.cl)f.push('Classe: '+F.cl); if(F.pr)f.push('Prioridade: '+F.pr); if(F.re)f.push('Responsável: '+F.re);
-  if(F.pz)f.push('Prazo: '+({late:'vencidas','7':'vencem em 7 dias','30':'vencem em 30 dias',none:'sem prazo',rest:'demais em aberto'})[F.pz]); if(AB)f.push('Classe A/B abertas'); if(F.q)f.push('Busca: "'+F.q+'"');
+  if(F.pz)f.push('Prazo: '+({late:'vencidas','7':'vencem em 7 dias','30':'vencem em 30 dias',none:'sem prazo',rest:'demais em aberto',open:'todas em aberto'})[F.pz]); if(AB)f.push('Classe A/B abertas'); if(F.q)f.push('Busca: "'+F.q+'"');
   return { title:'LISTA DE PENDÊNCIAS', sheet:'Lista de Pendências', file:'Lista_de_Pendencias_WI', stamp, filters:f.length?f.join('  ·  '):'Todos os itens', comp:false,
     kpis:[['Itens',n,'14399A'],['Concluídas',dn,'2F8F5B'],['Em aberto',ab,'9A6700'],['Vencidas',ve,'C21F26'],['Classe A/B abertas',cr,'C21F26']],
     cols:[['id','#',6,9],['disc','Disciplina',16,22],['pend','Pendência',60,74],['sis','Sistema',22,22],['rm','RM',12,16],['rmdt','Data RM',12,17,'date'],['cls','Cl.',6,9],['pri','Prioridade',11,17],['rc','Resp. correção',18,24],['prazo','Prazo',12,19,'date'],['st','Status',14,21],['sit','Situação do prazo',18,24],['etam','Comentário ETAM',50,0]],
@@ -1223,7 +1231,8 @@ function gridPaste(e){
 ['tbody','ctbody'].forEach(id=>{ const tb=$(id); tb.addEventListener('keydown',gridKeys); tb.addEventListener('paste',gridPaste); tb.addEventListener('input',e=>{ if(e.target.tagName==='TEXTAREA') autosize(tb); }); });
 
 function renderRecon(){
-  const act=DATA.filter(r=>r.st!=='CANCELADO'), canc=DATA.length-act.length, done=act.filter(r=>r.st==='Concluída').length, open=DATA.filter(OPEN);
+  const act=DATA.filter(r=>r.st!=='CANCELADO'), canc=DATA.length-act.length, done=act.filter(r=>r.st==='Concluída').length, and=act.filter(r=>r.st==='Em andamento').length, ni=act.filter(r=>r.st==='Não iniciada').length, open=DATA.filter(OPEN);
   const late=open.filter(LATE).length, soon=open.filter(r=>!LATE(r)&&r.prazo&&r.prazo<=TODAY+7).length, rest=open.length-late-soon;
-  $('recon').innerHTML=`<span><b>${DATA.length}</b> pendências</span><span>=</span><span><b>${done}</b> concluídas</span><span>+</span><span><b>${canc}</b> canceladas</span><span>+</span><span class="hl"><b>${open.length}</b> em aberto</span><i class="rsep"></i><span class="hl"><b>${open.length}</b> em aberto</span><span>=</span><span><b>${late}</b> vencidas</span><span>+</span><span><b>${soon}</b> vencem em 7 dias</span><span>+</span><span><b>${rest}</b> demais</span>`;
+  const t=(n,l,c)=>`<span class="${c||''}"><b>${n}</b> ${l}</span>`, op=x=>`<span class="op">${x}</span>`;
+  $('recon').innerHTML=`<div class="eq">${t(DATA.length,'pendências','tot')}${op('=')}${t(done,'concluídas')}${op('+')}${t(canc,'canceladas')}${op('+')}${t(late,'vencidas')}${op('+')}${t(soon,'vencem em 7 dias')}${op('+')}${t(rest,'demais em aberto')}</div><div class="eq">${t(open.length,'em aberto','tot')}${op('=')}${t(late,'vencidas')}${op('+')}${t(soon,'vencem em 7 dias')}${op('+')}${t(rest,'demais')}${op('=')}${t(and,'em andamento')}${op('+')}${t(ni,'não iniciadas')}</div>`;
 }</script>
