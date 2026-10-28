@@ -355,7 +355,13 @@ table.xl select.ed{min-width:156px}
 .recon .tot{background:var(--accent-soft);padding:2px 10px;border-radius:999px}
 .recon .op{color:var(--muted);font-weight:600}
 .sublabel{font:600 11.5px var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:4px 4px -4px}
-.kpis2 .kpi{padding:10px 14px}.kpis2 .kpi .v{font-size:34px}</style>
+.kpis2 .kpi{padding:10px 14px}.kpis2 .kpi .v{font-size:34px}.prow.ptot{cursor:default;border-top:1px solid var(--line);margin-top:6px;padding-top:12px;border-radius:0}
+.prow.ptot:hover{background:none}
+.prow.ptot .pname{font-weight:700}
+.peq{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;font-weight:600;font-size:13px}
+.peq span{display:inline-flex;align-items:center;gap:6px}
+.peq i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.peq em{font-style:normal;color:var(--muted)}</style>
 
 <div class="wrap">
   <header class="hero">
@@ -1118,14 +1124,15 @@ function renderDonut(){
   $('donut').querySelectorAll('[data-st]').forEach(e=>e.onclick=()=>setF('st',e.dataset.st));
 }
 function renderDisc(){
-  const act=DATA.filter(r=>r.st!=='CANCELADO'), g={}; act.forEach(r=>{(g[r.disc]??={})[r.st]=(g[r.disc][r.st]||0)+1});
+  const g={}; DATA.forEach(r=>{ const k=r.disc||'Sem disciplina'; (g[k]??={})[r.st]=(g[k][r.st]||0)+1; });
+  const ORD=['Concluída','Em andamento','Não iniciada','CANCELADO'], cols={'Concluída':'var(--ok)','Em andamento':'var(--warn)','Não iniciada':'var(--idle)','CANCELADO':'var(--cancel)'};
   const rows=Object.entries(g).map(([d,o])=>[d,o,Object.values(o).reduce((a,b)=>a+b,0)]).sort((a,b)=>b[2]-a[2]), mx=rows[0][2];
-  const cols={'Concluída':'var(--ok)','Em andamento':'var(--warn)','Não iniciada':'var(--idle)'};
-  $('disc').innerHTML=rows.map(([d,o,t])=>`<div class="prow" data-d="${esc(d)}" title="${o['Concluída']||0} de ${t} concluídas"><span class="pname">${esc(d)}</span><div class="ptrack"><div class="pfill" style="width:${t/mx*100}%">${['Concluída','Em andamento','Não iniciada'].filter(s=>o[s]).map(s=>`<i class="seg" style="flex:${o[s]};--c:${cols[s]}" title="${s}: ${o[s]}"></i>`).join('')}</div></div><span class="pval"><b>${t}</b><em>${pctOf(o['Concluída']||0,t)}%</em></span></div>`).join('');
-  $('disc').querySelectorAll('.prow').forEach(e=>e.onclick=()=>setF('disc',e.dataset.d));
-  $('leg').innerHTML=['Concluída','Em andamento','Não iniciada'].map(s=>`<span><i style="background:${cols[s]}"></i>${s}</span>`).join('')+'<span class="muted">· total = ativas (sem canceladas) · % = concluídas</span>';
-}
-function niceTop(m){ const s=m<=10?2:m<=50?10:m<=100?20:50; return Math.max(s,Math.ceil(m/s)*s); }
+  const tot=ORD.map(s=>DATA.filter(r=>r.st===s).length), all=DATA.length;
+  $('disc').innerHTML=rows.map(([d,o,t])=>{ const c=o['CANCELADO']||0, ativ=t-c; return `<div class="prow" data-d="${esc(d)}" title="${o['Concluída']||0} concluídas de ${ativ} ativas${c?` · ${c} cancelada${c===1?'':'s'}`:''}"><span class="pname">${esc(d)}</span><div class="ptrack"><div class="pfill" style="width:${t/mx*100}%">${ORD.filter(s=>o[s]).map(s=>`<i class="seg" style="flex:${o[s]};--c:${cols[s]}" title="${s==='CANCELADO'?'Canceladas':s}: ${o[s]}"></i>`).join('')}</div></div><span class="pval"><b>${t}</b><em>${ativ?pctOf(o['Concluída']||0,ativ):0}% concl.</em></span></div>`; }).join('')
+   +`<div class="prow ptot"><span class="pname">Total</span><div class="peq">${tot.map((n,i)=>`<span><i style="background:${cols[ORD[i]]}"></i>${n}</span>`).join('<em>+</em>')}</div><span class="pval"><b>${all}</b><em>= soma das disciplinas</em></span></div>`;
+  $('disc').querySelectorAll('.prow[data-d]').forEach(e=>e.onclick=()=>setF('disc',e.dataset.d));
+  $('leg').innerHTML=['Concluída','Em andamento','Não iniciada'].map(s=>`<span><i style="background:${cols[s]}"></i>${s}</span>`).join('')+`<span><i style="background:${cols['CANCELADO']}"></i>Canceladas</span><span class="muted">· total da disciplina inclui canceladas · % = concluídas das ativas</span>`;
+}function niceTop(m){ const s=m<=10?2:m<=50?10:m<=100?20:50; return Math.max(s,Math.ceil(m/s)*s); }
 function renderMonths(){
   const keyOf=r=>{ if(!r.prazo) return 0; const d=new Date(Date.UTC(1899,11,30)+r.prazo*864e5); return d.getUTCFullYear()*100+d.getUTCMonth(); };
   const m={}; DATA.filter(OPEN).forEach(r=>{ const k=keyOf(r); (m[k]??={late:0,ok:0}); LATE(r)?m[k].late++:m[k].ok++; });
