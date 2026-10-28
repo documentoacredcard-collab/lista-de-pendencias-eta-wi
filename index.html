@@ -559,7 +559,7 @@ table.tp tr.r[class*="rs-"]:not(.rs-none)>td:first-child,table.tc tr.r[class*="r
         <input type="search" id="cq" placeholder="Buscar material, RM, OC, NF…" aria-label="Buscar material">
         <select id="cfResp" aria-label="Responsável"></select>
         <select id="cfSt" aria-label="Status"></select>
-        <select id="cfAl" aria-label="Alerta"></select>
+        <select id="cfAl" aria-label="Status"></select>
         <button class="ghost" id="cclear" type="button">Limpar</button><button class="ghost" id="addc" type="button">+ Novo material</button><label class="chk"><input type="checkbox" id="editc" checked> Edição</label><button class="ghost" id="resetc" type="button">Restaurar original</button>
         <span class="count" id="ccount"></span>
       </div>
@@ -890,7 +890,7 @@ function renderCResp(){
     return `<div class="row" data-r="${p}" style="grid-template-columns:110px 1fr 40px" title="${e} entregues, ${pv} previstas, ${c} em compra"><span class="lab">${p}</span><div class="bar" style="width:${t/34*100}%;min-width:20px"><span style="width:${e/t*100}%;background:var(--ok)"></span><span style="width:${pv/t*100}%;background:var(--accent)"></span><span style="width:${c/t*100}%;background:var(--warn)"></span></div><span class="num">${t}</span></div>`}).join('');
   $('cresp').querySelectorAll('.row').forEach(e=>e.onclick=()=>cset('resp',e.dataset.r));
 }
-const CCOLS=[['id','#'],['resp','Responsável'],['item','Material'],['rm','RM'],['dt','Data RM'],['oc','OC'],['dcomp','Data da compra'],['nf','NF'],['st','Status'],['prev','Data de entrega na obra'],['al','Alerta'],['obs','Observação']];
+const CCOLS=[['id','#'],['resp','Responsável'],['item','Material'],['rm','RM'],['dt','Data RM'],['oc','OC'],['dcomp','Data da compra'],['nf','NF'],['st','Status'],['prev','Data de entrega na obra'],['al','Status'],['obs','Observação']];
 $('cthead').innerHTML='<tr>'+CCOLS.map(c=>`<th data-k="${c[0]}">${c[1]}<span class="arr"></span></th>`).join('')+'</tr>';
 $('cthead').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k; cSortDir=cSortKey===k?-cSortDir:1; cSortKey=k; renderCTable();});
 /* ---------- lista de material: tabela editável ---------- */
@@ -902,7 +902,7 @@ const cRowsAll=cFilter;
 const alertCell=r=>{ const a=alerta(r), ac=a==='Previsão vencida'?'t-bad':a==='Chega em 7 dias'?'t-warn':a==='Entregue'?'t-ok':'t-idle';
   return `<span class="tag ${ac}">${a}</span>${a==='Previsão vencida'&&r.prev?`<br><span class="late sm">há ${TODAY-r.prev} dias</span>`:''}`; };
 function alSel(r){ const a=alerta(r); const cls=a==='Previsão vencida'?'t-bad':a==='Chega em 7 dias'?'t-warn':a==='Entregue'?'t-ok':'t-idle'; const auto=altC(Object.assign({},r,{alOv:''}));
-  return `<select class="ed ${cls}" data-kind="c" data-id="${r.id}" data-k="alOv" aria-label="Alerta"><option value=""${r.alOv?'':' selected'}>Auto · ${auto}</option>${ALERTAS.map(x=>`<option${r.alOv===x?' selected':''}>${x}</option>`).join('')}</select>`; }
+  return `<select class="ed ${cls}" data-kind="c" data-id="${r.id}" data-k="alOv" aria-label="Status"><option value=""${r.alOv?'':' selected'}>Auto · ${auto}</option>${ALERTAS.map(x=>`<option${r.alOv===x?' selected':''}>${x}</option>`).join('')}</select>`; }
 function updAlert(tr){ if(!tr) return; const r=COMPRAS.find(x=>x.id===+tr.dataset.id); const td=tr.children[10]; if(!r||!td) return; if(EDIT){ if(td.contains(document.activeElement)) return; td.innerHTML=alSel(r); } else td.innerHTML=alertCell(r); }
 function enEdit(r){ const auto=enState(Object.assign({},r,{enOv:''})), cur=r.enOv||''; const k=enState(r); const cls=k==='Previsão vencida'?'t-bad':k==='Chega em 7 dias'?'t-warn':k==='Entregue'?'t-ok':'t-idle';
   const pv=rmItems(r.rm).map(c=>c.prev).filter(Boolean).sort((a,b)=>b-a)[0];
@@ -1072,7 +1072,7 @@ function buildData0(comp){
     const f=[]; if(CF.resp)f.push('Responsável: '+CF.resp); if(CF.st)f.push('Status: '+CF.st); if(CF.al)f.push('Alerta: '+CF.al); if(CF.q)f.push('Busca: "'+CF.q+'"');
     return { title:'LISTA DE MATERIAL', sheet:'Lista de Material', file:'Lista_de_Material_WI', stamp, hero:heroInfo(true), filters:f.length?f.join('  ·  '):'Todos os itens', comp:true,
       kpis:[['Itens',n,'14399A'],['Entregues na obra',ent,'2F8F5B'],['Em cotação',cot,'9A6700'],['Em aprovação / OC',apr,'3B6FB6'],['Previsão vencida',ven,'C21F26']],
-      cols:[['id','#',6,9],['resp','Responsável',16,24],['item','Material',60,90],['rm','RM',11,17],['dt','Data RM',12,18,'date'],['oc','OC',14,22],['dcomp','Data da compra',12,18,'date'],['nf','NF',10,16],['st','Status',20,28],['prev','Data de entrega na obra',14,20,'date'],['al','Alerta',16,26],['obs','Observação',36,0]],
+      cols:[['id','#',6,9],['resp','Responsável',16,24],['item','Material',60,90],['rm','RM',11,17],['dt','Data RM',12,18,'date'],['oc','OC',14,22],['dcomp','Data da compra',12,18,'date'],['nf','NF',10,16],['st','Status',20,28],['prev','Data de entrega na obra',14,20,'date'],['al','Status',16,26],['obs','Observação',36,0]],
       rows:rows.map(r=>[r.id,r.resp,r.item,r.rm||'',r.dt||null,r.oc||'',r.dcomp||null,r.nf||'',r.st,r.prev||null,alerta(r),r.obs||'']) };
   }
   const rows=filtered().slice().sort((a,b)=>a.id-b.id), n=rows.length;
@@ -1440,7 +1440,7 @@ makeMS({id:'fPr',key:'pr',label:'Prioridade',store:F,opts:()=>optsFrom(DATA,r=>r
 makeMS({id:'fRe',key:'re',label:'Responsável',store:F,opts:()=>optsFrom(DATA,r=>respKey(r)),change:()=>{ shown=60; renderTable(); }});
 makeMS({id:'cfResp',key:'resp',label:'Responsável',store:CF,opts:()=>{ const names=[...new Set(COMPRAS.map(r=>r.resp).filter(Boolean))]; return optsFrom(COMPRAS,r=>r.resp,CRESP.concat(names.filter(x=>!CRESP.includes(x)))); },change:()=>{ cShown=100000; renderCTable(); }});
 makeMS({id:'cfSt',key:'st',label:'Status',store:CF,opts:()=>optsFrom(COMPRAS,r=>r.st,CORDER),change:()=>{ cShown=100000; renderCTable(); }});
-makeMS({id:'cfAl',key:'al',label:'Alerta',store:CF,opts:()=>optsFrom(COMPRAS,r=>alerta(r),ALERTAS),change:()=>{ cShown=100000; renderCTable(); }});
+makeMS({id:'cfAl',key:'al',label:'Status da entrega',store:CF,opts:()=>optsFrom(COMPRAS,r=>alerta(r),ALERTAS),change:()=>{ cShown=100000; renderCTable(); }});
 
 function syncControls(){ $('q').value=F.q; MSLIST.forEach(m=>m.refresh()); }
 function csync(){ $('cq').value=CF.q; MSLIST.forEach(m=>m.refresh()); }
