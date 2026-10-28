@@ -396,7 +396,12 @@ table.xl select.ed{min-width:156px}
 .hpa{transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)}
 @media(max-width:700px){header.hero>.hpct{position:static;margin-top:8px}}
 @media (prefers-reduced-motion:reduce){.hpa{transition:none}}.hpct .hpf2{font:700 9.5px var(--body);letter-spacing:.1em;fill:#ffd9a8}
-</style>
+.rmc{display:flex;align-items:center;gap:4px;min-width:130px}
+.rmc .ed{flex:1;min-width:0}
+.rmlink{flex:none;display:inline-grid;place-items:center;width:24px;height:24px;margin-right:4px;border-radius:6px;background:var(--accent-soft);color:var(--accent);font-weight:700;text-decoration:none;font-size:14px}
+.rmlink:hover{background:var(--accent);color:var(--surface)}
+td.rmen{min-width:140px;padding:6px 10px!important;line-height:1.5}
+td.rmen .tag{margin-top:3px}</style>
 
 <div class="wrap">
   <header class="hero">
@@ -442,7 +447,7 @@ table.xl select.ed{min-width:156px}
       <select id="fPz" aria-label="Prazo"><option value="">Prazo: todos</option><option value="late">Vencidas</option><option value="7">Vencem em 7 dias</option><option value="30">Vencem em 30 dias</option><option value="none">Sem prazo</option><option value="rest">Demais em aberto</option><option value="open">Todas em aberto</option></select>
       <select id="fCl" aria-label="Classificação"></select>
       <select id="fPr" aria-label="Prioridade"></select>
-      <select id="fRe" aria-label="Responsável"></select>
+      <select id="fRe" aria-label="Responsável"></select><select id="fRm" aria-label="RM"></select><select id="fEn" aria-label="Entrega da RM"></select>
       <button class="ghost" id="clear" type="button">Limpar</button><button class="ghost" id="addp" type="button">+ Novo item</button><label class="chk"><input type="checkbox" id="editp" checked> Edição</label><button class="ghost" id="resetp" type="button">Restaurar original</button>
       <span class="count" id="count"></span>
     </div>
@@ -517,7 +522,7 @@ const ORDER = ['Concluída','Em andamento','Não iniciada','CANCELADO'];
 const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const cap = n => n===1?'':'s';
 
-const F = {q:'',disc:'',st:'',pz:'',cl:'',pr:'',re:''};
+const F = {q:'',disc:'',st:'',pz:'',cl:'',pr:'',re:'',rm:'',en:''};
 let sortKey='prazo', sortDir=1, shown=60, expanded=null;
 
 function respKey(r){ return (r.rc||'—').split('/')[0].trim() || '—'; }
@@ -602,7 +607,7 @@ function renderResp(){
   $('resp').querySelectorAll('.row').forEach(e=>e.onclick=()=>setF('re',e.dataset.r));
 }
 
-const COLS = [['id','ID'],['disc','Disciplina'],['pend','Pendência'],['sis','Sistema'],['rm','RM'],['rmdt','Data RM'],['cls','Cl.'],['pri','Prioridade'],['rc','Resp. correção'],['prazo','Prazo'],['st','Status']];
+const COLS = [['id','ID'],['disc','Disciplina'],['pend','Pendência'],['sis','Sistema'],['rm','RM'],['rmdt','Data RM'],['rmen','Entrega RM'],['cls','Cl.'],['pri','Prioridade'],['rc','Resp. correção'],['prazo','Prazo'],['st','Status']];
 $('thead').innerHTML = '<tr>'+COLS.map(c=>`<th data-k="${c[0]}">${c[1]}<span class="arr"></span></th>`).join('')+'</tr>';
 $('thead').querySelectorAll('th').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; sortDir = sortKey===k? -sortDir : 1; sortKey=k; renderTable(); });
 
@@ -614,6 +619,8 @@ function filtered(){
     if(!inF(F.cl,r.cls)) return false;
     if(!inF(F.pr,r.pri)) return false;
     if(!inF(F.re,respKey(r))) return false;
+    if(!inF(F.rm,rmKey(r.rm)||'none')) return false;
+    if(!inF(F.en,enState(r))) return false;
     if(AB && !(OPEN(r)&&(r.cls==='A'||r.cls==='B'))) return false;
     if(MON!==null){ if(!OPEN(r)) return false; const k=r.prazo? (()=>{const d=new Date(Date.UTC(1899,11,30)+r.prazo*864e5);return d.getUTCFullYear()*100+d.getUTCMonth()})():0; if(k!==MON) return false; }
     if(!pzOK(F.pz,r)) return false;
@@ -670,7 +677,7 @@ const dlHtml=(id,list)=>`<datalist id="${id}">${list.map(v=>`<option value="${es
 function onEdit(e){
   const t=e.target; if(!t.classList||!t.classList.contains('ed')) return;
   let v=t.value; if(t.dataset.type==='date') v=v?iso2s(v):null; else v=v.replace(/\s+$/,'');
-  setField(t.dataset.kind,+t.dataset.id,t.dataset.k,v);
+  setField(t.dataset.kind,+t.dataset.id,t.dataset.k,v); rmHook(t,v);
   if(t.tagName==='SELECT'){ t.className='ed '+toneCls(t.dataset.kind,t.dataset.k,t.value); } else { if(t.type==='date') t.classList.toggle('empty',!t.value); t.classList.add('saved'); } if(t.dataset.kind==='c') updAlert(t.closest('tr'));
 }
 function delClick(b,kind){
@@ -696,16 +703,16 @@ function renderTable(){
   $('count').textContent = rows.length+' de '+DATA.length+' itens'; PROWS=rows.length;
   $('thead').querySelectorAll('th').forEach(th=>th.querySelector('.arr').textContent = th.dataset.k===sortKey?(sortDir>0?' ▲':' ▼'):'');
   const DISCS=uniqBy(DATA,'disc'), NC=COLS.length;
-  $('dls').innerHTML=dlHtml('dl-sis',uniqBy(DATA,'sis'))+dlHtml('dl-rc',uniqBy(DATA,'rc'));
+  $('dls').innerHTML=dlHtml('dl-sis',uniqBy(DATA,'sis'))+dlHtml('dl-rc',uniqBy(DATA,'rc'))+dlHtml('dl-rm',[...new Set(COMPRAS.map(c=>c.rm).filter(Boolean))]);
   $('tbody').innerHTML = rows.length? rows.slice(0,shown).map(r=>{
     const open=expanded===r.id, late=LATE(r);
     const idc=`<td class="id"><button class="mini" data-exp="${r.id}" aria-label="Detalhes" aria-expanded="${open}">${open?'▾':'▸'}</button> ${r.id}${isAdded('p',r)?` <button class="mini del" data-del="${r.id}" title="Excluir item novo">×</button>`:''}</td>`;
     let h;
     if(EDIT){
-      h=`<tr class="r edit" data-id="${r.id}">${idc}<td>${eSel('p',r,'disc',DISCS)}</td><td class="pend">${eArea('p',r,'pend')}</td><td>${eTxt('p',r,'sis','dl-sis')}</td><td>${eTxt('p',r,'rm')}</td><td>${eDate('p',r,'rmdt')}</td><td>${eSel('p',r,'cls',['A','B','C','D'])}</td><td>${eSel('p',r,'pri',['Alta','Média','Baixa'])}</td><td>${eTxt('p',r,'rc','dl-rc')}</td><td>${eDate('p',r,'prazo')}${late?`<div class="late sm">há ${TODAY-r.prazo} dias</div>`:''}</td><td>${eSel('p',r,'st',ORDER)}</td></tr>`;
+      h=`<tr class="r edit" data-id="${r.id}">${idc}<td>${eSel('p',r,'disc',DISCS)}</td><td class="pend">${eArea('p',r,'pend')}</td><td>${eTxt('p',r,'sis','dl-sis')}</td><td>${rmCell(r,true)}</td><td>${eDate('p',r,'rmdt')}</td><td class="rmen">${enCell(r)}</td><td>${eSel('p',r,'cls',['A','B','C','D'])}</td><td>${eSel('p',r,'pri',['Alta','Média','Baixa'])}</td><td>${eTxt('p',r,'rc','dl-rc')}</td><td>${eDate('p',r,'prazo')}${late?`<div class="late sm">há ${TODAY-r.prazo} dias</div>`:''}</td><td>${eSel('p',r,'st',ORDER)}</td></tr>`;
     } else {
       const cls=ST[r.st]?.[1]||'t-idle', pc={Alta:'t-bad',Média:'t-warn',Baixa:'t-idle'}[r.pri]||'t-idle', cc=(r.cls==='A'||r.cls==='B')?'t-bad':(r.cls==='D'?'t-warn':'t-idle');
-      h=`<tr class="r" data-id="${r.id}">${idc}<td>${esc(r.disc)}</td><td class="pend"><div class="clamp">${esc(nice(r.pend))}</div></td><td>${esc(nice(r.sis))||'—'}</td><td class="dt">${esc(r.rm)||'—'}</td><td class="dt">${fmtD(r.rmdt)}</td><td><span class="tag ${cc}">${esc(r.cls)||'—'}</span></td><td><span class="tag ${pc}">${esc(r.pri)||'—'}</span></td><td>${esc(r.rc)||'—'}</td><td class="dt ${late?'late':''}">${fmtD(r.prazo)}${late?`<br><span class="late sm">há ${TODAY-r.prazo} dias</span>`:''}</td><td><span class="tag ${cls}">${esc(r.st)||'—'}</span></td></tr>`;
+      h=`<tr class="r" data-id="${r.id}">${idc}<td>${esc(r.disc)}</td><td class="pend"><div class="clamp">${esc(nice(r.pend))}</div></td><td>${esc(nice(r.sis))||'—'}</td><td class="dt">${rmCell(r,false)}</td><td class="dt">${fmtD(r.rmdt)}</td><td class="rmen">${enCell(r)}</td><td><span class="tag ${cc}">${esc(r.cls)||'—'}</span></td><td><span class="tag ${pc}">${esc(r.pri)||'—'}</span></td><td>${esc(r.rc)||'—'}</td><td class="dt ${late?'late':''}">${fmtD(r.prazo)}${late?`<br><span class="late sm">há ${TODAY-r.prazo} dias</span>`:''}</td><td><span class="tag ${cls}">${esc(r.st)||'—'}</span></td></tr>`;
     }
     if(open){
       h += `<tr class="det"><td colspan="${NC}"><div class="dl"><div class="full"><b>Descrição</b>${esc(r.pend)}</div>
@@ -1320,4 +1327,41 @@ var PROWS;
 (function(){ const wrap=$('tbody').closest('.tablewrap'); wrap.addEventListener('scroll',()=>{ if(shown<PROWS && wrap.scrollTop+wrap.clientHeight>=wrap.scrollHeight-260){ shown+=60; renderTable(); } },{passive:true}); })();
 
 function renderRecon(){}
-</script>
+
+/* ---------- RM: ligação entre pendências e lista de material ---------- */
+function rmKey(x){ return String(x==null?'':x).replace(/\D/g,''); }
+function rmItems(x){ const k=rmKey(x); return k?COMPRAS.filter(c=>rmKey(c.rm)===k):[]; }
+function altC(c){ return c.st==='Entregue na obra'?'Entregue':!c.prev?'Sem previsão':c.prev<TODAY?'Previsão vencida':c.prev<=TODAY+7?'Chega em 7 dias':'No prazo'; }
+const EN_ORDER=['Previsão vencida','Chega em 7 dias','No prazo','Sem previsão','Entregue','RM fora da lista de material','Sem RM'];
+function enState(r){
+  if(!rmKey(r.rm)) return 'Sem RM';
+  const it=rmItems(r.rm); if(!it.length) return 'RM fora da lista de material';
+  const st=it.map(altC);
+  if(st.every(x=>x==='Entregue')) return 'Entregue';
+  for(const k of ['Previsão vencida','Chega em 7 dias','No prazo']) if(st.includes(k)) return k;
+  return 'Sem previsão';
+}
+function enCell(r){
+  const k=enState(r); if(k==='Sem RM') return '<span class="note">—</span>';
+  const it=rmItems(r.rm), pv=it.map(c=>c.prev).filter(Boolean).sort((a,b)=>b-a)[0];
+  const cls=k==='Previsão vencida'?'t-bad':k==='Chega em 7 dias'?'t-warn':k==='Entregue'?'t-ok':'t-idle';
+  return `<div class="dt">${pv?fmtD(pv):'—'}</div><span class="tag ${cls}">${k}</span>`;
+}
+function rmLink(r){ const k=rmKey(r.rm); return k?`<a class="rmlink" href="#compras" data-rm="${k}" title="Abrir esta RM na lista de material">↗</a>`:''; }
+function rmCell(r,edit){ return `<div class="rmc">${edit?eTxt('p',r,'rm','dl-rm'):`<span>${esc(r.rm)||'—'}</span>`}${rmLink(r)}</div>`; }
+function rmHook(t,v){
+  if(t.dataset.kind!=='p'||t.dataset.k!=='rm') return;
+  const id=+t.dataset.id, r=DATA.find(x=>x.id===id); if(!r) return; const tr=t.closest('tr'); if(!tr) return;
+  const d=rmItems(v).map(c=>c.dt).filter(Boolean).sort((a,b)=>a-b)[0];
+  if(d){ setField('p',id,'rmdt',d); const di=tr.querySelector('input[data-k="rmdt"]'); if(di){ di.value=s2iso(d); di.classList.remove('empty'); } toast('Data da RM preenchida pela lista de material.'); }
+  const en=tr.querySelector('.rmen'); if(en) en.innerHTML=enCell(r);
+  const c=tr.querySelector('.rmc'); if(c){ const old=c.querySelector('.rmlink'); if(old) old.remove(); c.insertAdjacentHTML('beforeend',rmLink(r)); }
+}
+function goRM(key){
+  Object.keys(CF).forEach(k=>CF[k]=''); CF.q=key; cShown=60;
+  if(location.hash!=='#compras') location.hash='#compras'; else route();
+  csync(); renderCTable(); setTimeout(()=>{ const q=$('cq'); if(q&&q.scrollIntoView) q.scrollIntoView({behavior:'smooth',block:'center'}); },60);
+}
+$('tbody').addEventListener('click',e=>{ const a=e.target.closest('.rmlink'); if(!a) return; e.preventDefault(); e.stopPropagation(); goRM(a.dataset.rm); },true);
+makeMS({id:'fRm',key:'rm',label:'RM',store:F,opts:()=>{ const m={}; DATA.forEach(r=>{ const k=rmKey(r.rm); if(k) m[k]=(m[k]||0)+1; }); COMPRAS.forEach(c=>{ const k=rmKey(c.rm); if(k&&!(k in m)) m[k]=0; }); const lab={}; COMPRAS.forEach(c=>{ const k=rmKey(c.rm); if(k&&!lab[k]) lab[k]=c.rm.replace(/\s+/g,' ').trim(); }); DATA.forEach(r=>{ const k=rmKey(r.rm); if(k&&!lab[k]) lab[k]=String(r.rm).trim(); }); const o=Object.keys(m).sort().map(k=>({v:k,t:lab[k]||('RM '+k),n:m[k]})); o.push({v:'none',t:'Sem RM',n:DATA.filter(r=>!rmKey(r.rm)).length}); return o; },change:()=>{ shown=60; renderTable(); }});
+makeMS({id:'fEn',key:'en',label:'Entrega RM',store:F,opts:()=>EN_ORDER.map(v=>({v,t:v,n:DATA.filter(r=>enState(r)===v).length})),change:()=>{ shown=60; renderTable(); }});</script>
