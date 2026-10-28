@@ -541,7 +541,7 @@ table.tp tr.r[class*="rs-"]:not(.rs-none)>td:first-child,table.tc tr.r[class*="r
       <select id="fCl" aria-label="Classificação"></select>
       <select id="fPr" aria-label="Prioridade"></select>
       <select id="fRe" aria-label="Responsável"></select><select id="fRm" aria-label="RM"></select><select id="fEn" aria-label="Entrega da RM"></select>
-      <button class="ghost" id="clear" type="button">Limpar</button><button class="ghost" id="addp" type="button">+ Novo item</button><label class="chk"><input type="checkbox" id="editp" checked> Edição</label><button class="ghost" id="resetp" type="button">Restaurar original</button>
+      <button class="ghost" id="clear" type="button">Limpar</button><button class="ghost" id="addp" type="button" hidden>+ Novo item</button><label class="chk"><input type="checkbox" id="editp" checked> Edição</label><button class="ghost" id="resetp" type="button">Restaurar original</button>
       <span class="count" id="count"></span>
     </div>
     <div class="tablewrap"><table class="tp"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
@@ -563,7 +563,7 @@ table.tp tr.r[class*="rs-"]:not(.rs-none)>td:first-child,table.tc tr.r[class*="r
         <select id="cfResp" aria-label="Responsável"></select>
         <select id="cfSt" aria-label="Status"></select>
         <select id="cfAl" aria-label="Status"></select>
-        <button class="ghost" id="cclear" type="button">Limpar</button><button class="ghost" id="addc" type="button">+ Novo material</button><label class="chk"><input type="checkbox" id="editc" checked> Edição</label><button class="ghost" id="resetc" type="button">Restaurar original</button>
+        <button class="ghost" id="cclear" type="button">Limpar</button><button class="ghost" id="addc" type="button" hidden>+ Novo material</button><label class="chk"><input type="checkbox" id="editc" checked> Edição</label><button class="ghost" id="resetc" type="button" hidden>Restaurar original</button>
         <span class="count" id="ccount"></span>
       </div>
       <div class="tablewrap"><table class="tc"><thead id="cthead"></thead><tbody id="ctbody"></tbody></table></div>
@@ -1588,7 +1588,7 @@ function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r
   if(k==='st'&&v==='Entregue na obra'&&!r.chegou){ const d=nowSerial(); setField('c',id,'chegou',d); const di=tr.querySelector('input[data-k="chegou"]'); if(di){ di.value=s2iso(d); di.classList.remove('empty'); } toast('Data que chegou na obra preenchida com hoje. Você pode alterar para uma data anterior.'); }
   const c=tr.querySelector('.dias'); if(c) c.innerHTML=diasCellC(r); }; })();
 /* ---------- atualização automática ---------- */
-const BUILD_ID='20261028110801';
+const BUILD_ID='20261028110956';
 (function(){
   if(!/^https?:$/.test(location.protocol)) return;
   let shown=false;
