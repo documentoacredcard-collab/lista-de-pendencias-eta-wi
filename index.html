@@ -890,7 +890,7 @@ function renderCResp(){
     return `<div class="row" data-r="${p}" style="grid-template-columns:110px 1fr 40px" title="${e} entregues, ${pv} previstas, ${c} em compra"><span class="lab">${p}</span><div class="bar" style="width:${t/34*100}%;min-width:20px"><span style="width:${e/t*100}%;background:var(--ok)"></span><span style="width:${pv/t*100}%;background:var(--accent)"></span><span style="width:${c/t*100}%;background:var(--warn)"></span></div><span class="num">${t}</span></div>`}).join('');
   $('cresp').querySelectorAll('.row').forEach(e=>e.onclick=()=>cset('resp',e.dataset.r));
 }
-const CCOLS=[['id','#'],['resp','Responsável'],['item','Material'],['rm','RM'],['dt','Data RM'],['oc','OC'],['dcomp','Data da compra'],['nf','NF'],['st','Status'],['prev','Data de entrega na obra'],['al','Status'],['obs','Observação']];
+const CCOLS=[['id','#'],['resp','Responsável'],['item','Material'],['rm','RM'],['dt','Data RM'],['oc','OC'],['dcomp','Data da compra'],['nf','NF'],['st','Status'],['prev','Data que chegou na obra'],['al','Status'],['obs','Observação']];
 $('cthead').innerHTML='<tr>'+CCOLS.map(c=>`<th data-k="${c[0]}">${c[1]}<span class="arr"></span></th>`).join('')+'</tr>';
 $('cthead').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k; cSortDir=cSortKey===k?-cSortDir:1; cSortKey=k; renderCTable();});
 /* ---------- lista de material: tabela editável ---------- */
@@ -1072,7 +1072,7 @@ function buildData0(comp){
     const f=[]; if(CF.resp)f.push('Responsável: '+CF.resp); if(CF.st)f.push('Status: '+CF.st); if(CF.al)f.push('Alerta: '+CF.al); if(CF.q)f.push('Busca: "'+CF.q+'"');
     return { title:'LISTA DE MATERIAL', sheet:'Lista de Material', file:'Lista_de_Material_WI', stamp, hero:heroInfo(true), filters:f.length?f.join('  ·  '):'Todos os itens', comp:true,
       kpis:[['Itens',n,'14399A'],['Entregues na obra',ent,'2F8F5B'],['Em cotação',cot,'9A6700'],['Em aprovação / OC',apr,'3B6FB6'],['Previsão vencida',ven,'C21F26']],
-      cols:[['id','#',6,9],['resp','Responsável',16,24],['item','Material',60,90],['rm','RM',11,17],['dt','Data RM',12,18,'date'],['oc','OC',14,22],['dcomp','Data da compra',12,18,'date'],['nf','NF',10,16],['st','Status',20,28],['prev','Data de entrega na obra',14,20,'date'],['al','Status',16,26],['obs','Observação',36,0]],
+      cols:[['id','#',6,9],['resp','Responsável',16,24],['item','Material',60,90],['rm','RM',11,17],['dt','Data RM',12,18,'date'],['oc','OC',14,22],['dcomp','Data da compra',12,18,'date'],['nf','NF',10,16],['st','Status',20,28],['prev','Data que chegou na obra',14,20,'date'],['al','Status',16,26],['obs','Observação',36,0]],
       rows:rows.map(r=>[r.id,r.resp,r.item,r.rm||'',r.dt||null,r.oc||'',r.dcomp||null,r.nf||'',r.st,r.prev||null,alerta(r),r.obs||'']) };
   }
   const rows=filtered().slice().sort((a,b)=>a.id-b.id), n=rows.length;
