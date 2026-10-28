@@ -455,14 +455,19 @@ thead.grp th.g5{background:var(--idle);color:#fff}
 table.tp td,table.tc td{vertical-align:middle!important}
 table.xl.tp td,table.xl.tc td{vertical-align:middle}
 table.tp tbody tr.r:nth-child(odd) td:not([class*=t-]){background-image:linear-gradient(rgba(20,57,154,.025),rgba(20,57,154,.025))}
-table.tp td:nth-child(6),table.tp td:nth-child(7),table.tp td:nth-child(8),table.tp td:nth-child(9),table.tp td:nth-child(11),table.tp td:nth-child(12),
+table.tp td:nth-child(6),table.tp td:nth-child(7),table.tp td:nth-child(8),table.tp td:nth-child(9),table.tp td:nth-child(11),table.tp td:nth-child(12),table.tp td:nth-child(13),table.tp td:nth-child(14),
 table.tc td:nth-child(5),table.tc td:nth-child(7),table.tc td:nth-child(9),table.tc td:nth-child(10),table.tc td:nth-child(11){text-align:center}
-table.tp td:nth-child(6) .ed,table.tp td:nth-child(7) .ed,table.tp td:nth-child(8) .ed,table.tp td:nth-child(9) .ed,table.tp td:nth-child(11) .ed,table.tp td:nth-child(12) .ed,
+table.tp td:nth-child(6) .ed,table.tp td:nth-child(7) .ed,table.tp td:nth-child(8) .ed,table.tp td:nth-child(9) .ed,table.tp td:nth-child(11) .ed,table.tp td:nth-child(12) .ed,table.tp td:nth-child(13) .ed,table.tp td:nth-child(14) .ed,
 table.tc td:nth-child(5) .ed,table.tc td:nth-child(7) .ed,table.tc td:nth-child(9) .ed,table.tc td:nth-child(10) .ed,table.tc td:nth-child(11) .ed{text-align:center;text-align-last:center}
 table.tp td:nth-child(5),table.tc td:nth-child(4),table.tc td:nth-child(6){font-weight:500}
 table.xl.tp td.id,table.xl.tc td.id{text-align:center}
 tr.r:hover td{background-color:color-mix(in srgb,var(--accent) 5%,transparent)}
-.rmen .tag,.tc td:nth-child(11) .tag{display:inline-block}</style>
+.rmen .tag,.tc td:nth-child(11) .tag{display:inline-block}td.dias{padding:4px 6px!important;text-align:center}
+.dwrap{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.15}
+.dwrap b{font:700 22px/1 var(--display);letter-spacing:.01em}
+.dwrap em{font-style:normal;font-size:10.5px;color:var(--muted)}
+.dwrap .tag{margin-top:3px;font-size:10.5px;padding:2px 8px;white-space:normal;text-align:center}
+.dwrap.t-ok b{color:var(--ok)}.dwrap.t-warn b{color:var(--warn)}.dwrap.t-bad b{color:var(--bad)}.dwrap.t-idle b{color:var(--muted);font-size:16px}</style>
 
 <div class="wrap">
   <header class="hero">
@@ -668,7 +673,7 @@ function renderResp(){
   $('resp').querySelectorAll('.row').forEach(e=>e.onclick=()=>setF('re',e.dataset.r));
 }
 
-const COLS = [['id','ID'],['disc','Disciplina'],['pend','Pendência'],['sis','Sistema'],['rm','RM'],['rmdt','Data RM'],['rmen','Entrega RM'],['cls','Cl.'],['pri','Prioridade'],['rc','Resp. correção'],['prazo','Prazo'],['st','Status']];
+const COLS = [['id','ID'],['disc','Disciplina'],['pend','Pendência'],['sis','Sistema'],['rm','RM'],['rmdt','Data RM'],['rmen','Entrega RM'],['cls','Cl.'],['pri','Prioridade'],['rc','Resp. correção'],['prazo','Prazo'],['ent','Data de entrega do serviço'],['dias','Dias para cumprir'],['st','Status']];
 $('thead').innerHTML = '<tr>'+COLS.map(c=>`<th data-k="${c[0]}">${c[1]}<span class="arr"></span></th>`).join('')+'</tr>';
 $('thead').querySelectorAll('th').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; sortDir = sortKey===k? -sortDir : 1; sortKey=k; renderTable(); });
 
@@ -760,7 +765,7 @@ function setEdit(v){ EDIT=v; syncEdit(); renderTable(); renderCTable(); }
 function renderTable(){
   const rows = filtered();
   const k=sortKey;
-  rows.sort((a,b)=>{ let x=a[k],y=b[k]; if(x==null||x==='') return 1; if(y==null||y==='') return -1; return (typeof x==='number'&&typeof y==='number'? x-y : String(x).localeCompare(String(y),'pt'))*sortDir; });
+  rows.sort((a,b)=>{ let x=k==='dias'?diasPrazo(a):a[k],y=k==='dias'?diasPrazo(b):b[k]; if(x==null||x==='') return 1; if(y==null||y==='') return -1; return (typeof x==='number'&&typeof y==='number'? x-y : String(x).localeCompare(String(y),'pt'))*sortDir; });
   $('count').textContent = rows.length+' de '+DATA.length+' itens'; PROWS=rows.length;
   $('thead').querySelectorAll('th').forEach(th=>th.querySelector('.arr').textContent = th.dataset.k===sortKey?(sortDir>0?' ▲':' ▼'):'');
   const DISCS=uniqBy(DATA,'disc'), NC=COLS.length;
@@ -770,10 +775,10 @@ function renderTable(){
     const idc=`<td class="id"><button class="mini" data-exp="${r.id}" aria-label="Detalhes" aria-expanded="${open}">${open?'▾':'▸'}</button> ${r.id}${isAdded('p',r)?` <button class="mini del" data-del="${r.id}" title="Excluir item novo">×</button>`:''}</td>`;
     let h;
     if(EDIT){
-      h=`<tr class="r edit" data-id="${r.id}">${idc}<td>${eTxt('p',r,'disc','dl-disc')}</td><td class="pend">${eArea('p',r,'pend')}</td><td>${eArea('p',r,'sis')}</td><td>${rmCell(r,true)}</td><td>${eDate('p',r,'rmdt')}</td><td class="rmen">${enEdit(r)}</td><td>${eSel('p',r,'cls',['A','B','C','D'])}</td><td>${eSel('p',r,'pri',['Alta','Média','Baixa'])}</td><td>${eArea('p',r,'rc')}</td><td>${eDate('p',r,'prazo')}${late?`<div class="late sm">há ${TODAY-r.prazo} dias</div>`:''}</td><td>${eSel('p',r,'st',ORDER)}</td></tr>`;
+      h=`<tr class="r edit" data-id="${r.id}">${idc}<td>${eTxt('p',r,'disc','dl-disc')}</td><td class="pend">${eArea('p',r,'pend')}</td><td>${eArea('p',r,'sis')}</td><td>${rmCell(r,true)}</td><td>${eDate('p',r,'rmdt')}</td><td class="rmen">${enEdit(r)}</td><td>${eSel('p',r,'cls',['A','B','C','D'])}</td><td>${eSel('p',r,'pri',['Alta','Média','Baixa'])}</td><td>${eArea('p',r,'rc')}</td><td>${eDate('p',r,'prazo')}</td><td>${eDate('p',r,'ent')}</td><td class="dias">${diasCell(r)}</td><td>${eSel('p',r,'st',ORDER)}</td></tr>`;
     } else {
       const cls=ST[r.st]?.[1]||'t-idle', pc={Alta:'t-bad',Média:'t-warn',Baixa:'t-idle'}[r.pri]||'t-idle', cc=(r.cls==='A'||r.cls==='B')?'t-bad':(r.cls==='D'?'t-warn':'t-idle');
-      h=`<tr class="r" data-id="${r.id}">${idc}<td>${esc(r.disc)}</td><td class="pend"><div class="clamp">${esc(nice(r.pend))}</div></td><td>${esc(nice(r.sis))||'—'}</td><td class="dt">${rmCell(r,false)}</td><td class="dt">${fmtD(r.rmdt)}</td><td class="rmen">${enCell(r)}</td><td><span class="tag ${cc}">${esc(r.cls)||'—'}</span></td><td><span class="tag ${pc}">${esc(r.pri)||'—'}</span></td><td>${esc(r.rc)||'—'}</td><td class="dt ${late?'late':''}">${fmtD(r.prazo)}${late?`<br><span class="late sm">há ${TODAY-r.prazo} dias</span>`:''}</td><td><span class="tag ${cls}">${esc(r.st)||'—'}</span></td></tr>`;
+      h=`<tr class="r" data-id="${r.id}">${idc}<td>${esc(r.disc)}</td><td class="pend"><div class="clamp">${esc(nice(r.pend))}</div></td><td>${esc(nice(r.sis))||'—'}</td><td class="dt">${rmCell(r,false)}</td><td class="dt">${fmtD(r.rmdt)}</td><td class="rmen">${enCell(r)}</td><td><span class="tag ${cc}">${esc(r.cls)||'—'}</span></td><td><span class="tag ${pc}">${esc(r.pri)||'—'}</span></td><td>${esc(r.rc)||'—'}</td><td class="dt">${fmtD(r.prazo)}</td><td class="dt">${fmtD(r.ent)}</td><td class="dias">${diasCell(r)}</td><td><span class="tag ${cls}">${esc(r.st)||'—'}</span></td></tr>`;
     }
     if(open&&EDIT){ h += `<tr class="det"><td colspan="${NC}">${detEdit(r)}</td></tr>`; }
     else if(open){
@@ -1014,6 +1019,7 @@ function tone(comp,key,val){
     if(comp) return ({'Entregue na obra':XT.ok,'Entrega prevista':XT.blue,'Em cotação':XT.warn,'Em aprovação':XT.soft,'OC emitida':XT.soft,'Sem RM':XT.bad,'Aguardando fornecedor':XT.idle})[v]||null;
     return ({'Concluída':XT.ok,'Em andamento':XT.warn,'Não iniciada':XT.idle,'CANCELADO':XT.idle})[v]||null;
   }
+  if(!comp && key==='dias'){ if(v==='') return null; const n=+v; return n<0?XT.bad:(n<=7?XT.warn:XT.ok); }
   if(!comp && key==='pri') return v==='Alta'?XT.bad:null;
   if(!comp && key==='cls') return (v==='A'||v==='B')?XT.bad:(v==='D'?XT.warn:null);
   if(!comp && key==='sit') return v.startsWith('Vencida')?XT.bad:(v.startsWith('Vence')?XT.warn:null);
@@ -1050,8 +1056,8 @@ function buildData(comp){
   if(F.pz)f.push('Prazo: '+({late:'vencidas','7':'vencem em 7 dias','30':'vencem em 30 dias',none:'sem prazo',rest:'demais em aberto',open:'todas em aberto'})[F.pz]); if(AB)f.push('Classe A/B abertas'); if(F.q)f.push('Busca: "'+F.q+'"');
   return { title:'LISTA DE PENDÊNCIAS', sheet:'Lista de Pendências', file:'Lista_de_Pendencias_WI', stamp, hero:heroInfo(false), filters:f.length?f.join('  ·  '):'Todos os itens', comp:false,
     kpis:[['Itens',n,'14399A'],['Concluídas',dn,'2F8F5B'],['Em aberto',ab,'9A6700'],['Vencidas',ve,'C21F26'],['Classe A/B abertas',cr,'C21F26']],
-    cols:[['id','#',6,9],['disc','Disciplina',16,22],['pend','Pendência',60,74],['sis','Sistema',22,22],['rm','RM',12,16],['rmdt','Data RM',12,17,'date'],['cls','Cl.',6,9],['pri','Prioridade',11,17],['rc','Resp. correção',18,24],['prazo','Prazo',12,19,'date'],['st','Status',14,21],['sit','Situação do prazo',18,24],['etam','Comentário ETAM',50,0]],
-    rows:rows.map(r=>[r.id,r.disc,r.pend,r.sis||'',r.rm||'',r.rmdt||null,r.cls,r.pri,r.rc||'',r.prazo||null,r.st,sitPrazo(r),r.etam||'']) };
+    cols:[['id','#',6,8],['disc','Disciplina',16,19],['pend','Pendência',60,60],['sis','Sistema',22,19],['rm','RM',12,14],['rmdt','Data RM',12,16,'date'],['cls','Cl.',6,7],['pri','Prioridade',11,15],['rc','Resp. correção',18,21],['prazo','Prazo',12,17,'date'],['ent','Entrega do serviço',14,17,'date'],['dias','Dias p/ cumprir',12,13],['st','Status',14,19],['sit','Situação do prazo',18,21],['etam','Comentário ETAM',50,0]],
+    rows:rows.map(r=>[r.id,r.disc,r.pend,r.sis||'',r.rm||'',r.rmdt||null,r.cls,r.pri,r.rc||'',r.prazo||null,r.ent||null,(diasPrazo(r)==null?'':diasPrazo(r)),r.st,sitPrazo(r),r.etam||'']) };
 }
 const serialToDate = s => new Date(Date.UTC(1899,11,30)+s*864e5);
 const nowStr = () => { const d=new Date(), p=x=>String(x).padStart(2,'0'); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; };
@@ -1478,11 +1484,24 @@ function renderDonut(){
 /* ---------- grupos de colunas ---------- */
 (function(){
   const mk=(id,groups)=>{ const th=$(id); if(!th||th.previousElementSibling&&th.previousElementSibling.classList.contains('grp')) return; th.insertAdjacentHTML('beforebegin','<thead class="grp"><tr>'+groups.map(g=>`<th colspan="${g[1]}" class="${g[2]}">${g[0]}</th>`).join('')+'</tr></thead>'); };
-  mk('thead',[['Pendência',4,'g1'],['Material (RM)',3,'g2'],['Classificação',2,'g3'],['Acompanhamento',3,'g4']]);
+  mk('thead',[['Pendência',4,'g1'],['Material (RM)',3,'g2'],['Classificação',2,'g3'],['Acompanhamento',5,'g4']]);
   mk('cthead',[['Material',3,'g1'],['Solicitação (RM)',2,'g2'],['Compra',3,'g3'],['Entrega',3,'g4'],['Obs.',1,'g5']]);
 })();
 (function(){
   const cg=(tbl,ws)=>{ if(!tbl||tbl.querySelector('colgroup')) return; tbl.insertAdjacentHTML('afterbegin','<colgroup>'+ws.map(x=>`<col style="width:${x}%">`).join('')+'</colgroup>'); };
-  cg($('thead').closest('table'),[4.6,7.6,22.8,10,7.8,7.4,7.6,3.4,6.4,7.6,7.4,7.4]);
+  cg($('thead').closest('table'),[4,6.4,18.4,8.4,6.6,6.2,6.6,3,5.6,6.4,6.2,6.8,7.6,6.2]);
   cg($('cthead').closest('table'),[3.5,7,17,7,7.5,7.5,7.5,6.5,8,8.5,11.5,8.5]);
-})();</script>
+})();
+/* ---------- prazo: dias para cumprir e fases ---------- */
+function diasPrazo(r){ return (r.prazo&&OPEN(r))?(r.prazo-TODAY):null; }
+function fasePrazo(r){
+  if(r.st==='CANCELADO') return {t:'Cancelada',c:'t-idle',n:''};
+  if(!OPEN(r)){ if(r.ent&&r.prazo){ const d=r.ent-r.prazo; return d<=0?{t:'Entregue no prazo',c:'t-ok',n:'✓'}:{t:`Entregue com ${d} d de atraso`,c:'t-bad',n:'!'}; } return {t:'Concluída',c:'t-ok',n:'✓'}; }
+  const d=diasPrazo(r); if(d==null) return {t:'Sem prazo',c:'t-idle',n:'—'};
+  if(d<0) return {t:'Vencida',c:'t-bad',n:String(d)};
+  if(d<=7) return {t:'Atenção',c:'t-warn',n:String(d)};
+  return {t:'No prazo',c:'t-ok',n:String(d)};
+}
+function diasCell(r){ const f=fasePrazo(r), d=diasPrazo(r); const lab=d==null?f.n:(d<0?`${-d} d atrás`:d===0?'hoje':`${d} d`);
+  return `<div class="dwrap ${f.c}"><b>${d==null?f.n:(d<0?'−'+(-d):d)}</b><em>${d==null?'':(d<0?'dias de atraso':d===0?'vence hoje':'dias restantes')}</em><span class="tag ${f.c}">${f.t}</span></div>`; }
+(function(){ const old=rmHook; rmHook=function(t,v){ old(t,v); if(t.dataset.kind==='p'&&(t.dataset.k==='prazo'||t.dataset.k==='ent'||t.dataset.k==='st')){ const r=DATA.find(x=>x.id===+t.dataset.id), tr=t.closest('tr'); const c=tr&&tr.querySelector('.dias'); if(r&&c) c.innerHTML=diasCell(r); } }; })();</script>
