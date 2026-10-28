@@ -491,7 +491,10 @@ table.xl .ed:hover:not(select){background-image:none;background-color:color-mix(
 tr.r.rs-ok>td{--rc:var(--ok)}tr.r.rs-warn>td{--rc:var(--warn)}tr.r.rs-blue>td{--rc:var(--accent)}tr.r.rs-violet>td{--rc:var(--rc-violet)}tr.r.rs-bad>td{--rc:var(--bad)}tr.r.rs-idle>td{--rc:var(--idle)}
 table.tp tr.r[class*="rs-"]:not(.rs-none)>td,table.tc tr.r[class*="rs-"]:not(.rs-none)>td{background-color:color-mix(in srgb,var(--rc) 14%,var(--surface))!important;background-image:none!important}
 table.tp tr.r[class*="rs-"]:not(.rs-none):hover>td,table.tc tr.r[class*="rs-"]:not(.rs-none):hover>td{background-color:color-mix(in srgb,var(--rc) 22%,var(--surface))!important}
-table.tp tr.r[class*="rs-"]:not(.rs-none)>td:first-child,table.tc tr.r[class*="rs-"]:not(.rs-none)>td:first-child{box-shadow:inset 5px 0 0 var(--rc)}</style>
+table.tp tr.r[class*="rs-"]:not(.rs-none)>td:first-child,table.tc tr.r[class*="rs-"]:not(.rs-none)>td:first-child{box-shadow:inset 5px 0 0 var(--rc)}.updbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));z-index:80;display:flex;align-items:center;gap:12px;background:var(--accent);color:var(--on-accent);padding:10px 14px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.35);font-weight:600;max-width:92vw}
+.updbar button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:6px 12px}
+#updbtn{background:#fff;color:#14399a;font-weight:700}
+#updx{background:transparent;color:inherit;font-size:18px;padding:0 6px}</style>
 
 <div class="wrap">
   <header class="hero">
@@ -572,6 +575,7 @@ table.tp tr.r[class*="rs-"]:not(.rs-none)>td:first-child,table.tc tr.r[class*="r
 </div>
 
 <div class="toast" id="toast" role="status" hidden></div>
+<div class="updbar" id="updbar" hidden><span>Nova versão do sistema disponível.</span><button type="button" id="updbtn">Atualizar agora</button><button type="button" id="updx" aria-label="Fechar">×</button></div>
 <div id="dls" hidden></div>
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="Compartilhar painel">
   <div class="scard">
@@ -1582,4 +1586,22 @@ function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r
   const id=+t.dataset.id, r=COMPRAS.find(x=>x.id===id), tr=t.closest('tr'); if(!r||!tr) return;
   if(k==='chegou'&&v&&r.st!=='Entregue na obra'){ setField('c',id,'st','Entregue na obra'); const ss=tr.querySelector('select[data-k="st"]'); if(ss){ ss.value='Entregue na obra'; ss.className='ed '+toneCls('c','st','Entregue na obra'); } toast('Status alterado para Entregue na obra, pois a data de chegada foi preenchida.'); }
   if(k==='st'&&v==='Entregue na obra'&&!r.chegou){ const d=nowSerial(); setField('c',id,'chegou',d); const di=tr.querySelector('input[data-k="chegou"]'); if(di){ di.value=s2iso(d); di.classList.remove('empty'); } toast('Data que chegou na obra preenchida com hoje. Você pode alterar para uma data anterior.'); }
-  const c=tr.querySelector('.dias'); if(c) c.innerHTML=diasCellC(r); }; })();</script>
+  const c=tr.querySelector('.dias'); if(c) c.innerHTML=diasCellC(r); }; })();
+/* ---------- atualização automática ---------- */
+const BUILD_ID='20261028105810';
+(function(){
+  if(!/^https?:$/.test(location.protocol)) return;
+  let shown=false;
+  async function check(){
+    if(shown) return;
+    try{
+      const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}); if(!r.ok) return;
+      const t=await r.text(); const m=t.match(/const BUILD_ID='(\d{14})'/);
+      if(m && m[1]!==BUILD_ID){ shown=true; $('updbar').hidden=false; }
+    }catch(e){}
+  }
+  $('updbtn').onclick=()=>{ location.href=location.pathname+'?v='+Date.now()+location.hash; };
+  $('updx').onclick=()=>{ $('updbar').hidden=true; };
+  setTimeout(check,4000); setInterval(check,45000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) check(); });
+})();</script>
