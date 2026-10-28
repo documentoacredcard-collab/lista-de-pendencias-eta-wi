@@ -484,7 +484,10 @@ table.xl select.ed.t-idle,table.xl select.ed.t-idle:hover,table.xl select.ed.t-i
 table.xl select.ed:hover,table.xl select.ed:focus{box-shadow:inset 0 0 0 2px var(--accent)}
 table.xl select.ed option{background:var(--surface);color:var(--ink);font-weight:500}
 table.xl .ed:focus{background-color:var(--surface)}
-table.xl .ed:hover:not(select){background-image:none;background-color:color-mix(in srgb,var(--accent) 7%,var(--surface))}</style>
+table.xl .ed:hover:not(select){background-image:none;background-color:color-mix(in srgb,var(--accent) 7%,var(--surface))}.dwrap em{font-size:10px;letter-spacing:.02em;text-align:center;line-height:1.2}
+.dwrap{padding:3px 2px;border-radius:8px}
+.dwrap.t-ok{background:var(--ok-soft)}.dwrap.t-warn{background:var(--warn-soft)}.dwrap.t-bad{background:var(--bad-soft)}.dwrap.t-idle{background:var(--idle-soft)}
+</style>
 
 <div class="wrap">
   <header class="hero">
@@ -1036,7 +1039,7 @@ function tone(comp,key,val){
     if(comp) return ({'Entregue na obra':XT.ok,'Entrega prevista':XT.blue,'Em cotação':XT.warn,'Em aprovação':XT.soft,'OC emitida':XT.soft,'Sem RM':XT.bad,'Aguardando fornecedor':XT.idle})[v]||null;
     return ({'Concluída':XT.ok,'Em andamento':XT.warn,'Não iniciada':XT.idle,'CANCELADO':XT.idle})[v]||null;
   }
-  if(!comp && key==='dias'){ if(v==='') return null; const n=+v; return n<0?XT.bad:(n<=7?XT.warn:XT.ok); }
+  if(!comp && key==='dias'){ if(v==='') return null; if(typeof v==='string'&&v.toUpperCase().startsWith('ENTREGUE')) return v.toUpperCase().includes('ATRASO')?XT.bad:XT.ok; const n=+v; return n<0?XT.bad:(n<=7?XT.warn:XT.ok); }
   if(!comp && key==='pri') return v==='Alta'?XT.bad:null;
   if(!comp && key==='cls') return (v==='A'||v==='B')?XT.bad:(v==='D'?XT.warn:null);
   if(!comp && key==='sit') return v.startsWith('Vencida')?XT.bad:(v.startsWith('Vence')?XT.warn:null);
@@ -1075,7 +1078,7 @@ function buildData0(comp){
   return { title:'LISTA DE PENDÊNCIAS', sheet:'Lista de Pendências', file:'Lista_de_Pendencias_WI', stamp, hero:heroInfo(false), filters:f.length?f.join('  ·  '):'Todos os itens', comp:false,
     kpis:[['Itens',n,'14399A'],['Concluídas',dn,'2F8F5B'],['Em aberto',ab,'9A6700'],['Vencidas',ve,'C21F26'],['Classe A/B abertas',cr,'C21F26']],
     cols:[['id','#',6,8],['disc','Disciplina',16,19],['pend','Pendência',60,60],['sis','Sistema',22,19],['rm','RM',12,14],['rmdt','Data RM',12,16,'date'],['cls','Cl.',6,7],['pri','Prioridade',11,15],['rc','Resp. correção',18,21],['prazo','Prazo',12,17,'date'],['ent','Entrega do serviço',14,17,'date'],['dias','Dias p/ cumprir',12,13],['st','Status',14,19],['sit','Situação do prazo',18,21],['etam','Comentário ETAM',50,0]],
-    rows:rows.map(r=>[r.id,r.disc,r.pend,r.sis||'',r.rm||'',r.rmdt||null,r.cls,r.pri,r.rc||'',r.prazo||null,r.ent||null,(diasPrazo(r)==null?'':diasPrazo(r)),r.st,sitPrazo(r),r.etam||'']) };
+    rows:rows.map(r=>[r.id,r.disc,r.pend,r.sis||'',r.rm||'',r.rmdt||null,r.cls,r.pri,r.rc||'',r.prazo||null,r.ent||null,diasExport(r),r.st,sitPrazo(r),r.etam||'']) };
 }
 const serialToDate = s => new Date(Date.UTC(1899,11,30)+s*864e5);
 const nowStr = () => { const d=new Date(), p=x=>String(x).padStart(2,'0'); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; };
@@ -1520,9 +1523,18 @@ function fasePrazo(r){
   if(d<=7) return {t:'Atenção',c:'t-warn',n:String(d)};
   return {t:'No prazo',c:'t-ok',n:String(d)};
 }
-function diasCell(r){ const f=fasePrazo(r), d=diasPrazo(r); const lab=d==null?f.n:(d<0?`${-d} d atrás`:d===0?'hoje':`${d} d`);
-  return `<div class="dwrap ${f.c}"><b>${d==null?f.n:(d<0?'−'+(-d):d)}</b><em>${d==null?'':(d<0?'dias de atraso':d===0?'vence hoje':'dias restantes')}</em><span class="tag ${f.c}">${f.t}</span></div>`; }
-function nowSerial(){ const d=new Date(); return Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5)+25569; }
+function diasInfo(r){
+  if(r.st==='CANCELADO') return {b:'—',c:'t-idle',l:''};
+  if(!OPEN(r)){
+    if(r.ent&&r.prazo){ const d=r.ent-r.prazo; return d>0?{b:'+'+d,c:'t-bad',l:'ENTREGUE · DIAS DE ATRASO'}:(d===0?{b:'0',c:'t-ok',l:'ENTREGUE NO PRAZO'}:{b:String(-d),c:'t-ok',l:'ENTREGUE · DIAS ANTES'}); }
+    return {b:'✓',c:'t-ok',l:'ENTREGUE · SEM DATA'};
+  }
+  const d=diasPrazo(r); if(d==null) return {b:'—',c:'t-idle',l:'SEM PRAZO'};
+  if(d<0) return {b:'−'+(-d),c:'t-bad',l:'DIAS VENCIDOS'};
+  return {b:String(d),c:d<=7?'t-warn':'t-ok',l:d===0?'VENCE HOJE':'DIAS PARA ENTREGAR'};
+}
+function diasCell(r){ const f=diasInfo(r); return `<div class="dwrap ${f.c}"><b>${f.b}</b><em>${f.l}</em></div>`; }
+function diasExport(r){ if(OPEN(r)){ const d=diasPrazo(r); return d==null?'':d; } if(r.st==='CANCELADO') return ''; if(r.ent&&r.prazo){ const d=r.ent-r.prazo; return d>0?'ENTREGUE '+d+' D ATRASO':'ENTREGUE NO PRAZO'; } return 'ENTREGUE'; }function nowSerial(){ const d=new Date(); return Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5)+25569; }
 function stNote(r){
   if(r.st==='CANCELADO') return '';
   if(!OPEN(r)){ if(r.ent&&r.prazo){ const d=r.ent-r.prazo; return d>0?`<span class="sn bad">concluída com ${d} dia${d===1?'':'s'} de atraso</span>`:'<span class="sn ok">concluída no prazo</span>'; } return ''; }
