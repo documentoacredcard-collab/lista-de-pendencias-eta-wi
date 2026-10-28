@@ -475,7 +475,16 @@ tr.r:hover td{background-color:color-mix(in srgb,var(--accent) 5%,transparent)}
 input[type=date]{text-transform:uppercase}.prow{grid-template-columns:160px 1fr 84px}
 .prow.person{grid-template-columns:30px 128px 1fr 84px}
 .pname{font-size:13px}
-</style>
+table.xl select.ed,table.xl select.ed:hover,table.xl select.ed:focus,table.xl select.ed:active{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' fill='none' stroke='%235a6785' stroke-width='1.8'/></svg>")!important;background-repeat:no-repeat!important;background-position:right 4px center!important;background-size:9px 6px!important;opacity:1!important;filter:none!important}
+table.xl select.ed:hover:not([class*=" t-"]),table.xl select.ed:focus:not([class*=" t-"]){background-color:var(--accent-soft)!important;color:var(--ink)!important}
+table.xl select.ed.t-ok,table.xl select.ed.t-ok:hover,table.xl select.ed.t-ok:focus{background-color:var(--ok-soft)!important;color:var(--ok)!important}
+table.xl select.ed.t-warn,table.xl select.ed.t-warn:hover,table.xl select.ed.t-warn:focus{background-color:var(--warn-soft)!important;color:var(--warn)!important}
+table.xl select.ed.t-bad,table.xl select.ed.t-bad:hover,table.xl select.ed.t-bad:focus{background-color:var(--bad-soft)!important;color:var(--bad)!important}
+table.xl select.ed.t-idle,table.xl select.ed.t-idle:hover,table.xl select.ed.t-idle:focus{background-color:var(--idle-soft)!important;color:var(--muted)!important}
+table.xl select.ed:hover,table.xl select.ed:focus{box-shadow:inset 0 0 0 2px var(--accent)}
+table.xl select.ed option{background:var(--surface);color:var(--ink);font-weight:500}
+table.xl .ed:focus{background-color:var(--surface)}
+table.xl .ed:hover:not(select){background-image:none;background-color:color-mix(in srgb,var(--accent) 7%,var(--surface))}</style>
 
 <div class="wrap">
   <header class="hero">
