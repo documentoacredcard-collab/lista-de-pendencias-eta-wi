@@ -1511,7 +1511,7 @@ function renderDonut(){
 (function(){
   const mk=(id,groups)=>{ const th=$(id); if(!th||th.previousElementSibling&&th.previousElementSibling.classList.contains('grp')) return; th.insertAdjacentHTML('beforebegin','<thead class="grp"><tr>'+groups.map(g=>`<th colspan="${g[1]}" class="${g[2]}">${g[0]}</th>`).join('')+'</tr></thead>'); };
   mk('thead',[['Pendência',4,'g1'],['Material (RM)',3,'g2'],['Classificação',2,'g3'],['Acompanhamento',5,'g4'],['Obs.',1,'g5']]);
-  mk('cthead',[['Material',3,'g1'],['Solicitação (RM)',2,'g2'],['Compra',3,'g3'],['Entrega',4,'g4'],['Obs.',1,'g5']]);
+  mk('cthead',[['Material',3,'g1'],['Solicitação (RM)',2,'g2'],['Compra',4,'g3'],['Entrega',3,'g4'],['Obs.',1,'g5']]);
 })();
 (function(){
   const cg=(tbl,ws)=>{ if(!tbl||tbl.querySelector('colgroup')) return; tbl.insertAdjacentHTML('afterbegin','<colgroup>'+ws.map(x=>`<col style="width:${x}%">`).join('')+'</colgroup>'); };
