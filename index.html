@@ -856,7 +856,7 @@ $('brand').innerHTML = brandHtml(); $('brand2').innerHTML = `<img src="${LOGO_ET
 const CST = {'Entregue na obra':['var(--ok)','t-ok'],'Entrega prevista':['var(--accent)','t-ok'],'Em cotação':['var(--warn)','t-warn'],'Em aprovação':['#5b86c7','t-idle'],'OC emitida':['#5b86c7','t-idle'],'Aguardando fornecedor':['var(--idle)','t-idle'],'Sem RM':['var(--bad)','t-bad']};
 const CORDER = ['Em cotação','Em aprovação','OC emitida','Entrega prevista','Entregue na obra','Aguardando fornecedor','Sem RM'];
 const CRESP = ['Arnoldo','Mateus','José Benedito'];
-const alerta = r => r.alOv ? r.alOv : r.st==='Entregue na obra' ? 'Entregue' : !r.prev ? 'Sem previsão' : r.prev<TODAY ? 'Previsão vencida' : r.prev<=TODAY+7 ? 'Chega em 7 dias' : 'No prazo';
+const alerta = r => r.chegou||r.st==='Entregue na obra' ? 'Entregue' : !r.prev ? 'Sem previsão' : r.prev<TODAY ? 'Previsão vencida' : r.prev<=TODAY+7 ? 'Chega em 7 dias' : 'No prazo';
 const ALERTAS = ['Previsão vencida','Chega em 7 dias','No prazo','Sem previsão','Entregue'];
 const CF = {q:'',resp:'',st:'',al:''}; let cShown=100000, cSortKey='id', cSortDir=1;
 fill('cfResp','Responsável: todos',CRESP); fill('cfSt','Status: todos',CORDER); fill('cfAl','Alerta: todos',ALERTAS);
@@ -890,7 +890,7 @@ function renderCResp(){
     return `<div class="row" data-r="${p}" style="grid-template-columns:110px 1fr 40px" title="${e} entregues, ${pv} previstas, ${c} em compra"><span class="lab">${p}</span><div class="bar" style="width:${t/34*100}%;min-width:20px"><span style="width:${e/t*100}%;background:var(--ok)"></span><span style="width:${pv/t*100}%;background:var(--accent)"></span><span style="width:${c/t*100}%;background:var(--warn)"></span></div><span class="num">${t}</span></div>`}).join('');
   $('cresp').querySelectorAll('.row').forEach(e=>e.onclick=()=>cset('resp',e.dataset.r));
 }
-const CCOLS=[['id','#'],['resp','Responsável'],['item','Material'],['rm','RM'],['dt','Data RM'],['oc','OC'],['dcomp','Data da compra'],['nf','NF'],['st','Status'],['prev','Data que chegou na obra'],['al','Entrega na obra'],['obs','Observação']];
+const CCOLS=[['id','#'],['resp','Responsável'],['item','Material'],['rm','RM'],['dt','Data RM'],['oc','OC'],['dcomp','Data da compra'],['nf','NF'],['prev','Data de previsão de entrega'],['chegou','Data que chegou na obra'],['dias','Dias para cumprir'],['st','Status'],['obs','Observação']];
 $('cthead').innerHTML='<tr>'+CCOLS.map(c=>`<th data-k="${c[0]}">${c[1]}<span class="arr"></span></th>`).join('')+'</tr>';
 $('cthead').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k; cSortDir=cSortKey===k?-cSortDir:1; cSortKey=k; renderCTable();});
 /* ---------- lista de material: tabela editável ---------- */
@@ -903,7 +903,7 @@ const alertCell=r=>{ const a=alerta(r), ac=a==='Previsão vencida'?'t-bad':a==='
   return `<span class="tag ${ac}">${a}</span>${a==='Previsão vencida'&&r.prev?`<br><span class="late sm">há ${TODAY-r.prev} dias</span>`:''}`; };
 function alSel(r){ const a=alerta(r); const cls=a==='Previsão vencida'?'t-bad':a==='Chega em 7 dias'?'t-warn':a==='Entregue'?'t-ok':'t-idle'; const auto=altC(Object.assign({},r,{alOv:''}));
   return `<select class="ed ${cls}" data-kind="c" data-id="${r.id}" data-k="alOv" aria-label="Status"><option value=""${r.alOv?'':' selected'}>Auto · ${auto}</option>${ALERTAS.map(x=>`<option${r.alOv===x?' selected':''}>${x}</option>`).join('')}</select>`; }
-function updAlert(tr){ if(!tr) return; const r=COMPRAS.find(x=>x.id===+tr.dataset.id); const td=tr.children[10]; if(!r||!td) return; if(EDIT){ if(td.contains(document.activeElement)) return; td.innerHTML=alSel(r); } else td.innerHTML=alertCell(r); }
+function updAlert(tr){ if(!tr) return; const r=COMPRAS.find(x=>x.id===+tr.dataset.id); const td=tr.querySelector('.dias'); if(r&&td) td.innerHTML=diasCellC(r); }
 function enEdit(r){ const auto=enState(Object.assign({},r,{enOv:''})), cur=r.enOv||''; const k=enState(r); const cls=k==='Previsão vencida'?'t-bad':k==='Chega em 7 dias'?'t-warn':k==='Entregue'?'t-ok':'t-idle';
   const pv=rmItems(r.rm).map(c=>c.prev).filter(Boolean).sort((a,b)=>b-a)[0];
   return `<select class="ed ${cls}" data-kind="p" data-id="${r.id}" data-k="enOv" aria-label="Entrega da RM"><option value=""${cur?'':' selected'}>Auto · ${auto}</option>${['Previsão vencida','Chega em 7 dias','No prazo','Sem previsão','Entregue','RM fora da lista de material','Sem RM'].map(x=>`<option${cur===x?' selected':''}>${x}</option>`).join('')}</select>${pv?`<div class="note" style="padding:0 6px 4px">${fmtD(pv)}</div>`:''}`; }
@@ -912,23 +912,23 @@ function detEdit(r){
   return `<div class="dl">${f('TAG / KKS',eTxt('p',r,'tag'))}${f('Identificada por',eTxt('p',r,'ri'))}${f('Data de identificação',eDate('p',r,'di'))}${f('Data de entrega',eDate('p',r,'ent'))}${f('Gera custo futuro?',eSel('p',r,'custo',['Sim','Não']))}${f('Status compra',eTxt('p',r,'compra'))}${f('ETAM',eArea('p',r,'etam'),1)}${f('ENEVA',eArea('p',r,'eneva'),1)}${f('Comentários Eneva',eArea('p',r,'ce'),1)}${f('Comentário Engenharia Eneva',eArea('p',r,'cen'),1)}</div>`;
 }function renderCTable(){
   const rows=cFilter();
-  const val=r=>cSortKey==='al'?alerta(r):r[cSortKey];
+  const val=r=>cSortKey==='al'?alerta(r):cSortKey==='dias'?diasPrazoC(r):r[cSortKey];
   rows.sort((a,b)=>{let x=val(a),y=val(b); if(x==null||x==='')return 1; if(y==null||y==='')return -1; return (typeof x==='number'&&typeof y==='number'?x-y:String(x).localeCompare(String(y),'pt'))*cSortDir;});
   $('ccount').textContent=rows.length+' de '+COMPRAS.length+' itens';
   $('cthead').querySelectorAll('th').forEach(th=>th.querySelector('.arr').textContent=th.dataset.k===cSortKey?(cSortDir>0?' ▲':' ▼'):'');
   $('ctbody').innerHTML=rows.length?rows.map(r=>{
     const idc=`<td class="id">${r.id}${isAdded('c',r)?` <button class="mini del" data-del="${r.id}" title="Excluir item novo">×</button>`:''}</td>`;
     const al=`<td>${alertCell(r)}</td>`;
-    if(EDIT) return `<tr class="r edit ${rowCls('c',r)}" data-id="${r.id}">${idc}<td>${eTxt('c',r,'resp','dl-cresp')}</td><td class="pend">${eArea('c',r,'item')}</td><td>${eTxt('c',r,'rm')}</td><td>${eDate('c',r,'dt')}</td><td>${eTxt('c',r,'oc')}</td><td>${eDate('c',r,'dcomp')}</td><td>${eTxt('c',r,'nf')}</td><td>${eSel('c',r,'st',CORDER)}</td><td>${eDate('c',r,'prev')}</td><td>${alSel(r)}</td><td>${eArea('c',r,'obs')}</td></tr>`;
-    return `<tr class="r ${rowCls('c',r)}" data-id="${r.id}">${idc}<td>${esc(r.resp)}</td><td class="pend"><div class="clamp" title="${esc(r.item)}">${esc(nice(r.item))}</div></td><td class="dt">${esc(r.rm)||'—'}</td><td class="dt">${fmtD(r.dt)}</td><td class="dt">${esc(r.oc)||'—'}</td><td class="dt">${fmtD(r.dcomp)}</td><td class="dt">${esc(r.nf)||'—'}</td><td><span class="tag ${CST[r.st]?.[1]||'t-idle'}">${esc(r.st)}</span></td><td class="dt">${fmtD(r.prev)}</td>${al}<td>${esc(r.obs)||'—'}</td></tr>`;
-  }).join(''):'<tr><td colspan="12" class="empty">Nenhum material com esses filtros.</td></tr>';
+    if(EDIT) return `<tr class="r edit ${rowCls('c',r)}" data-id="${r.id}">${idc}<td>${eTxt('c',r,'resp','dl-cresp')}</td><td class="pend">${eArea('c',r,'item')}</td><td>${eTxt('c',r,'rm')}</td><td>${eDate('c',r,'dt')}</td><td>${eTxt('c',r,'oc')}</td><td>${eDate('c',r,'dcomp')}</td><td>${eTxt('c',r,'nf')}</td><td>${eDate('c',r,'prev')}</td><td>${eDate('c',r,'chegou')}</td><td class="dias">${diasCellC(r)}</td><td>${eSel('c',r,'st',CORDER)}</td><td>${eArea('c',r,'obs')}</td></tr>`;
+    return `<tr class="r ${rowCls('c',r)}" data-id="${r.id}">${idc}<td>${esc(r.resp)}</td><td class="pend"><div class="clamp" title="${esc(r.item)}">${esc(nice(r.item))}</div></td><td class="dt">${esc(r.rm)||'—'}</td><td class="dt">${fmtD(r.dt)}</td><td class="dt">${esc(r.oc)||'—'}</td><td class="dt">${fmtD(r.dcomp)}</td><td class="dt">${esc(r.nf)||'—'}</td><td class="dt">${fmtD(r.prev)}</td><td class="dt">${fmtD(r.chegou)}</td><td class="dias">${diasCellC(r)}</td><td><span class="tag ${CST[r.st]?.[1]||'t-idle'}">${esc(r.st)}</span></td><td>${esc(r.obs)||'—'}</td></tr>`;
+  }).join(''):'<tr><td colspan="13" class="empty">Nenhum material com esses filtros.</td></tr>';
   $('cmore').hidden=true; postRender('ctbody');
 }
 $('ctbody').addEventListener('change',onEdit);
 $('ctbody').addEventListener('click',e=>{ const d=e.target.closest('[data-del]'); if(d) delClick(d,'c'); });
 $('addc').onclick=()=>{
   const id=Math.max(0,...COMPRAS.map(r=>r.id))+1;
-  const r={id,resp:'',item:'',rm:'',oc:'',nf:'',st:'Em cotação',dt:null,dcomp:null,prev:null,obs:''};
+  const r={id,resp:'',item:'',rm:'',oc:'',nf:'',st:'Em cotação',dt:null,dcomp:null,prev:null,chegou:null,obs:''};
   COMPRAS.push(r); EDITS.addC.push(r); persist();
   Object.keys(CF).forEach(k=>CF[k]=''); cSortKey='id'; cSortDir=-1; EDIT=true; syncEdit(); csync();
   renderCTable(); refreshC();
@@ -1047,6 +1047,7 @@ function tone(comp,key,val){
   if(!comp && key==='pri') return v==='Alta'?XT.bad:null;
   if(!comp && key==='cls') return (v==='A'||v==='B')?XT.bad:(v==='D'?XT.warn:null);
   if(!comp && key==='sit') return v.startsWith('Vencida')?XT.bad:(v.startsWith('Vence')?XT.warn:null);
+  if(comp && key==='dias'){ if(v==='') return null; if(typeof v==='string'&&v.toUpperCase().startsWith('ENTREGUE')) return v.toUpperCase().includes('ATRASO')?XT.bad:XT.ok; const n=+v; return n<0?XT.bad:(n<=7?XT.warn:XT.ok); }
   if(comp && key==='al') return v==='Previsão vencida'?XT.bad:(v==='Chega em 7 dias'?XT.warn:(v==='Entregue'?XT.ok:null));
   return null;
 }
@@ -1072,8 +1073,8 @@ function buildData0(comp){
     const f=[]; if(CF.resp)f.push('Responsável: '+CF.resp); if(CF.st)f.push('Status: '+CF.st); if(CF.al)f.push('Alerta: '+CF.al); if(CF.q)f.push('Busca: "'+CF.q+'"');
     return { title:'LISTA DE MATERIAL', sheet:'Lista de Material', file:'Lista_de_Material_WI', stamp, hero:heroInfo(true), filters:f.length?f.join('  ·  '):'Todos os itens', comp:true,
       kpis:[['Itens',n,'14399A'],['Entregues na obra',ent,'2F8F5B'],['Em cotação',cot,'9A6700'],['Em aprovação / OC',apr,'3B6FB6'],['Previsão vencida',ven,'C21F26']],
-      cols:[['id','#',6,9],['resp','Responsável',16,24],['item','Material',60,90],['rm','RM',11,17],['dt','Data RM',12,18,'date'],['oc','OC',14,22],['dcomp','Data da compra',12,18,'date'],['nf','NF',10,16],['st','Status',20,28],['prev','Data que chegou na obra',14,20,'date'],['al','Entrega na obra',18,26],['obs','Observação',36,0]],
-      rows:rows.map(r=>[r.id,r.resp,r.item,r.rm||'',r.dt||null,r.oc||'',r.dcomp||null,r.nf||'',r.st,r.prev||null,alerta(r),r.obs||'']) };
+      cols:[['id','#',6,9],['resp','Responsável',16,24],['item','Material',60,90],['rm','RM',11,17],['dt','Data RM',12,18,'date'],['oc','OC',14,22],['dcomp','Data da compra',12,18,'date'],['nf','NF',10,16],['prev','Data de previsão de entrega',14,20,'date'],['chegou','Data que chegou na obra',14,20,'date'],['dias','Dias p/ cumprir',14,18],['st','Status',20,28],['obs','Observação',36,0]],
+      rows:rows.map(r=>[r.id,r.resp,r.item,r.rm||'',r.dt||null,r.oc||'',r.dcomp||null,r.nf||'',r.prev||null,r.chegou||null,diasExportC(r),r.st,r.obs||'']) };
   }
   const rows=filtered().slice().sort((a,b)=>a.id-b.id), n=rows.length;
   const dn=rows.filter(r=>r.st==='Concluída').length, ab=rows.filter(OPEN).length, ve=rows.filter(LATE).length, cr=rows.filter(r=>OPEN(r)&&(r.cls==='A'||r.cls==='B')).length;
@@ -1510,12 +1511,12 @@ function renderDonut(){
 (function(){
   const mk=(id,groups)=>{ const th=$(id); if(!th||th.previousElementSibling&&th.previousElementSibling.classList.contains('grp')) return; th.insertAdjacentHTML('beforebegin','<thead class="grp"><tr>'+groups.map(g=>`<th colspan="${g[1]}" class="${g[2]}">${g[0]}</th>`).join('')+'</tr></thead>'); };
   mk('thead',[['Pendência',4,'g1'],['Material (RM)',3,'g2'],['Classificação',2,'g3'],['Acompanhamento',5,'g4'],['Obs.',1,'g5']]);
-  mk('cthead',[['Material',3,'g1'],['Solicitação (RM)',2,'g2'],['Compra',3,'g3'],['Entrega',3,'g4'],['Obs.',1,'g5']]);
+  mk('cthead',[['Material',3,'g1'],['Solicitação (RM)',2,'g2'],['Compra',3,'g3'],['Entrega',4,'g4'],['Obs.',1,'g5']]);
 })();
 (function(){
   const cg=(tbl,ws)=>{ if(!tbl||tbl.querySelector('colgroup')) return; tbl.insertAdjacentHTML('afterbegin','<colgroup>'+ws.map(x=>`<col style="width:${x}%">`).join('')+'</colgroup>'); };
   cg($('thead').closest('table'),[3.4,5.4,14.2,6.6,5.2,5,7.6,2.6,6.2,5.6,5.4,6.2,6.6,5.2,14.8]);
-  cg($('cthead').closest('table'),[3.5,7,17,7,7.5,7.5,7.5,6.5,8,8.5,11.5,8.5]);
+  cg($('cthead').closest('table'),[3.4,6.4,17,6.8,6.2,7.2,7.2,6.2,7.6,7.6,7.4,8.4,8.6]);
 })();
 /* ---------- prazo: dias para cumprir e fases ---------- */
 function diasPrazo(r){ return (r.prazo&&OPEN(r))?(r.prazo-TODAY):null; }
@@ -1563,4 +1564,22 @@ function emptyMsg(){
 function rowCls(kind,r){
   const m=kind==='p'?{'Concluída':'ok','Em andamento':'warn','Não iniciada':'blue','CANCELADO':'idle'}:{'Entregue na obra':'ok','Entrega prevista':'blue','Em cotação':'warn','Em aprovação':'violet','OC emitida':'violet','Sem RM':'bad','Aguardando fornecedor':'idle'};
   return 'rs-'+(m[r.st]||'none');
-}</script>
+}
+function diasPrazoC(r){ return (r.prev&&!r.chegou&&r.st!=='Entregue na obra')?(r.prev-TODAY):null; }
+function diasInfoC(r){
+  if(r.chegou||r.st==='Entregue na obra'){
+    if(r.chegou&&r.prev){ const d=r.chegou-r.prev; return d>0?{b:'+'+d,c:'t-bad',l:'ENTREGUE · DIAS DE ATRASO'}:(d===0?{b:'0',c:'t-ok',l:'ENTREGUE NO PRAZO'}:{b:String(-d),c:'t-ok',l:'ENTREGUE · DIAS ANTES'}); }
+    return {b:'✓',c:'t-ok',l:'ENTREGUE · SEM DATA'};
+  }
+  const d=diasPrazoC(r); if(d==null) return {b:'—',c:'t-idle',l:'SEM PREVISÃO'};
+  if(d<0) return {b:'−'+(-d),c:'t-bad',l:'DIAS VENCIDOS'};
+  return {b:String(d),c:d<=7?'t-warn':'t-ok',l:d===0?'VENCE HOJE':'DIAS PARA ENTREGAR'};
+}
+function diasCellC(r){ const f=diasInfoC(r); return `<div class="dwrap ${f.c}"><b>${f.b}</b><em>${f.l}</em></div>`; }
+function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r.prev){ const d=r.chegou-r.prev; return d>0?'ENTREGUE '+d+' D ATRASO':'ENTREGUE NO PRAZO'; } return 'ENTREGUE'; } const d=diasPrazoC(r); return d==null?'':d; }
+(function(){ const old=rmHook; rmHook=function(t,v){ old(t,v);
+  if(t.dataset.kind!=='c') return; const k=t.dataset.k; if(k!=='chegou'&&k!=='prev'&&k!=='st') return;
+  const id=+t.dataset.id, r=COMPRAS.find(x=>x.id===id), tr=t.closest('tr'); if(!r||!tr) return;
+  if(k==='chegou'&&v&&r.st!=='Entregue na obra'){ setField('c',id,'st','Entregue na obra'); const ss=tr.querySelector('select[data-k="st"]'); if(ss){ ss.value='Entregue na obra'; ss.className='ed '+toneCls('c','st','Entregue na obra'); } toast('Status alterado para Entregue na obra, pois a data de chegada foi preenchida.'); }
+  if(k==='st'&&v==='Entregue na obra'&&!r.chegou){ const d=nowSerial(); setField('c',id,'chegou',d); const di=tr.querySelector('input[data-k="chegou"]'); if(di){ di.value=s2iso(d); di.classList.remove('empty'); } toast('Data que chegou na obra preenchida com hoje. Você pode alterar para uma data anterior.'); }
+  const c=tr.querySelector('.dias'); if(c) c.innerHTML=diasCellC(r); }; })();</script>
