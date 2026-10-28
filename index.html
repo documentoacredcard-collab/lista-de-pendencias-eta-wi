@@ -387,13 +387,15 @@ table.xl select.ed{min-width:156px}
 .kpi.comp ul{list-style:none;margin:8px 0 0;padding:0;font-size:12.5px;color:var(--muted);line-height:1.6}
 .kpi.comp li span{display:inline-block;width:12px;color:var(--accent);font-weight:700}
 .kpi.comp li b{color:var(--ink);font-weight:700}header.hero>.hpct{position:absolute;right:34px;top:34px;width:190px;display:flex;flex-direction:column;align-items:center;text-align:center;color:#fff;z-index:2}
-.hpct .hpn{font:700 76px/1 var(--display);letter-spacing:.01em;text-shadow:0 2px 10px rgba(5,15,60,.35)}
-.hpct .hpn small{font-size:34px;margin-left:2px}
-.hpct .hpl{font:600 11px var(--body);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;opacity:.95}
-.hpct .hps{font:500 12px var(--body);opacity:.82;margin-top:3px}
-@media(max-width:700px){header.hero>.hpct{position:static;margin-top:10px;align-items:flex-start;text-align:left;color:var(--hero-ink);text-shadow:none}.hpct .hpn{text-shadow:none}}.kpi.comp{cursor:pointer;display:block;text-align:left}
 .kpi.comp::before{display:block;background:var(--accent)}
-.kpi.comp .tot{font:700 46px/1 var(--display);color:var(--accent);margin-top:4px}</style>
+.kpi.comp .tot{font:700 46px/1 var(--display);color:var(--accent);margin-top:4px}header.hero>.hpct{position:absolute;right:56px;top:14px;z-index:2;line-height:0}
+.hpct svg{display:block;overflow:visible}
+.hpct .hpn{font:700 44px var(--display);fill:#fff;letter-spacing:.01em}
+.hpct .hpp{font:700 18px var(--display)}
+.hpct .hpl{font:600 8.5px var(--body);letter-spacing:.16em;fill:#cfe0ff}
+.hpa{transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)}
+@media(max-width:700px){header.hero>.hpct{position:static;margin-top:8px}}
+@media (prefers-reduced-motion:reduce){.hpa{transition:none}}</style>
 
 <div class="wrap">
   <header class="hero">
@@ -836,18 +838,12 @@ renderCKpis(); renderCStat(); renderCResp(); renderCTable();
 
 /* ---------- abas ---------- */
 function renderHero(comp){
-  let pct,label,segs;
-  if(comp){
-    const n=COMPRAS.length, e=COMPRAS.filter(r=>r.st==='Entregue na obra').length, p=COMPRAS.filter(r=>r.st==='Entrega prevista').length, c=n-e-p;
-    pct=Math.round(e/n*100); label='Entregue na obra · lista de material';
-    segs=[['Entregue',e,'var(--ok)'],['Entrega prevista',p,'var(--accent)'],['Em compra',c,'var(--warn)']];
-  } else {
-    const a=DATA.filter(r=>r.st!=='CANCELADO'), d=a.filter(r=>r.st==='Concluída').length, g=a.filter(r=>r.st==='Em andamento').length, ni=a.length-d-g;
-    pct=Math.round(d/a.length*100); label='Concluído das pendências ativas (sem canceladas)';
-    segs=[['Concluídas',d,'var(--ok)'],['Em andamento',g,'var(--warn)'],['Não iniciadas',ni,'var(--idle)'],['Canceladas',DATA.length-a.length,'var(--cancel)']];
-  }
-  const tot=segs.reduce((x,s)=>x+s[1],0);
-  $('hprog').innerHTML=`<div class="hp-num"><b>${pct}%</b><small>${label}</small></div><div class="hp-bar"><div class="hp-track" role="img" aria-label="${pct}% ${label}">${segs.filter(s=>s[1]).map(s=>`<i style="width:${s[1]/tot*100}%;background-color:${s[2]};color:${s[2]}" title="${s[0]}: ${s[1]}"></i>`).join('')}</div><div class="hp-leg">${segs.map(s=>`<span><i style="background:${s[2]}"></i>${s[0]} <b>${s[1]}</b></span>`).join('')}</div></div>`;
+  let pct,l1,l2;
+  if(comp){ const n=COMPRAS.length, e=COMPRAS.filter(r=>r.st==='Entregue na obra').length; pct=pctOf(e,n); l1='Material entregue'; l2=`${e} de ${n} itens entregues`; }
+  else { const a=DATA.filter(r=>r.st!=='CANCELADO'), d=a.filter(r=>r.st==='Concluída').length; pct=pctOf(d,a.length); l1='Avanço'; l2=`${d} de ${a.length} pendências ativas concluídas`; }
+  const S=150, c=S/2, R=58, C=2*Math.PI*R, off=C*(1-pct/100), ang=(pct/100)*2*Math.PI-Math.PI/2, ex=c+R*Math.cos(ang), ey=c+R*Math.sin(ang);
+  let ticks=''; for(let k=0;k<60;k++){ const a=k/60*2*Math.PI, r1=R+13, r2=R+(k%5===0?19:16); ticks+=`<line x1="${(c+r1*Math.cos(a)).toFixed(1)}" y1="${(c+r1*Math.sin(a)).toFixed(1)}" x2="${(c+r2*Math.cos(a)).toFixed(1)}" y2="${(c+r2*Math.sin(a)).toFixed(1)}" stroke="#fff" stroke-opacity="${k/60<=pct/100?.7:.22}" stroke-width="${k%5===0?1.6:1}" stroke-linecap="round"/>`; }
+  $('hpct').innerHTML=`<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" role="img" aria-label="${pct}% — ${esc(l2)}"><title>${esc(l2)}</title><defs><linearGradient id="hpg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9fd0ff"/><stop offset="1" stop-color="#ffffff"/></linearGradient><filter id="hpf" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3.2"/></filter></defs>${ticks}<circle cx="${c}" cy="${c}" r="${R}" fill="rgba(6,18,70,.28)" stroke="rgba(255,255,255,.2)" stroke-width="11"/><circle class="hpa" cx="${c}" cy="${c}" r="${R}" fill="none" stroke="#7fb8ff" stroke-opacity=".7" stroke-width="11" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 ${c} ${c})" filter="url(#hpf)"/><circle class="hpa" cx="${c}" cy="${c}" r="${R}" fill="none" stroke="url(#hpg)" stroke-width="11" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 ${c} ${c})"/><circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="4.2" fill="#fff"/><text x="${c}" y="${c+9}" text-anchor="middle" class="hpn">${pct}<tspan class="hpp" dy="-14" dx="2">%</tspan></text><text x="${c}" y="${c+27}" text-anchor="middle" class="hpl">${esc(l1).toUpperCase()}</text></svg>`;
 }function route(){
   const comp = location.hash==='#compras';
   $('v-pend').hidden=comp; $('v-comp').hidden=!comp; renderHero(comp); if(EDIT) requestAnimationFrame(()=>autosize(comp?$('ctbody'):$('tbody')));
@@ -1121,20 +1117,7 @@ function legendList(items,total,attr){
 }
 
 /* --- hero --- */
-function renderHero(comp){
-  let pct,label,chips;
-  if(comp){
-    const n=COMPRAS.length, e=COMPRAS.filter(r=>r.st==='Entregue na obra').length, p=COMPRAS.filter(r=>r.st==='Entrega prevista').length, c=n-e-p;
-    pct=pctOf(e,n); label='Entregue na obra · lista de material';
-    chips=[['Total',n,'var(--hero-g2)'],['Entregue',e,'var(--ok)'],['Entrega prevista',p,'var(--hero-g2)'],['Em compra',c,'var(--warn)']];
-  } else {
-    const a=DATA.filter(r=>r.st!=='CANCELADO'), d=a.filter(r=>r.st==='Concluída').length, g=a.filter(r=>r.st==='Em andamento').length, ni=a.length-d-g;
-    pct=pctOf(d,a.length); label='Concluído das pendências ativas (sem canceladas)';
-    chips=[['Total',DATA.length,'var(--hero-g2)'],['Concluídas',d,'var(--ok)'],['Em andamento',g,'var(--warn)'],['Não iniciadas',ni,'var(--idle)'],['Canceladas',DATA.length-a.length,'var(--cancel)']];
-  }
-  const R=48, C=2*Math.PI*R, off=C*(1-pct/100);
-  $('hprog').innerHTML=`<div class="hp-gauge"><svg viewBox="0 0 120 120" width="118" height="118" role="img" aria-label="${pct}% ${esc(label)}"><defs><linearGradient id="hgx" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--hero-g1)"/><stop offset="1" style="stop-color:var(--hero-g2)"/></linearGradient></defs><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--hero-track)" stroke-width="11"/><circle cx="60" cy="60" r="${R}" fill="none" stroke="url(#hgx)" stroke-width="11" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 60 60)" class="hgarc"/><text x="60" y="68" text-anchor="middle" class="hgn">${pct}%</text></svg></div><div class="hp-info"><div class="hp-t">${esc(label)}</div><div class="hp-chips">${chips.map(c=>`<div class="hp-chip"><i style="background:${c[2]}"></i><b>${c[1]}</b><span>${c[0]}</span></div>`).join('')}</div></div>`;
-}
+
 
 /* --- pendências --- */
 function renderDonut(){
@@ -1334,11 +1317,6 @@ function csync(){ $('cq').value=CF.q; MSLIST.forEach(m=>m.refresh()); }
 
 var PROWS;
 (function(){ const wrap=$('tbody').closest('.tablewrap'); wrap.addEventListener('scroll',()=>{ if(shown<PROWS && wrap.scrollTop+wrap.clientHeight>=wrap.scrollHeight-260){ shown+=60; renderTable(); } },{passive:true}); })();
-function renderHero(comp){
-  let pct,l1,l2;
-  if(comp){ const n=COMPRAS.length, e=COMPRAS.filter(r=>r.st==='Entregue na obra').length; pct=pctOf(e,n); l1='Avanço do material'; l2=`${e} de ${n} entregues`; }
-  else { const a=DATA.filter(r=>r.st!=='CANCELADO'), d=a.filter(r=>r.st==='Concluída').length; pct=pctOf(d,a.length); l1='Avanço das pendências'; l2=`${d} de ${a.length} ativas`; }
-  $('hpct').innerHTML=`<span class="hpn">${pct}<small>%</small></span><span class="hpl">${l1}</span><span class="hps">${l2}</span>`;
-}
+
 function renderRecon(){}
 </script>
