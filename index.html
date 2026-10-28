@@ -378,7 +378,15 @@ table.xl select.ed{min-width:156px}
 .msi:hover{background:var(--accent-soft)}
 .msi input{width:16px;height:16px;accent-color:var(--accent);margin:0}
 .msi em{font-style:normal;font-size:12px;color:var(--muted);font-weight:600}
-.mse{padding:10px;color:var(--muted);font-size:13px}</style>
+.mse{padding:10px;color:var(--muted);font-size:13px}@media (min-width:1180px){ .kpis.k1{grid-template-columns:minmax(205px,1.5fr) repeat(7,minmax(0,1fr))} }
+.kpi.comp{cursor:default;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--accent-soft),var(--surface));border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.kpi.comp:hover{transform:none;box-shadow:none}
+.kpi.comp::before{display:none}
+.kpi.comp .tot{font:700 42px/1 var(--display);color:var(--accent);margin-top:6px}
+.kpi.comp .tot small{font:600 13px var(--body);color:var(--muted);letter-spacing:0}
+.kpi.comp ul{list-style:none;margin:8px 0 0;padding:0;font-size:12.5px;color:var(--muted);line-height:1.6}
+.kpi.comp li span{display:inline-block;width:12px;color:var(--accent);font-weight:700}
+.kpi.comp li b{color:var(--ink);font-weight:700}</style>
 
 <div class="wrap">
   <header class="hero">
@@ -404,7 +412,7 @@ table.xl select.ed{min-width:156px}
   </div>
 
   <div class="view" id="v-pend">
-  <section class="kpis" id="kpis"></section>
+  <section class="kpis k1" id="kpis"></section>
   <div class="recon" id="recon"></div>
   <div class="sublabel">Detalhe das pendências em aberto</div>
   <section class="kpis kpis2" id="kpis2"></section>
@@ -541,7 +549,7 @@ function renderKpis(){
     ['Classe A/B',crit,'das em aberto · impedem comissionar ou partir',crit?'bad':'ok',()=>{ F.st=''; F.pz=''; F.cl=''; F.q=''; AB=true; shown=60; syncControls(); renderTable(); }],
     ['Prioridade alta',alta,'das em aberto',alta?'warn':'',go('pr','Alta')]];
   const draw=(id,list)=>{ $(id).innerHTML=list.map((k,i)=>`<button class="kpi ${k[3]}" data-i="${i}" type="button"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="c">${k[2]}</div></button>`).join(''); $(id).querySelectorAll('.kpi').forEach(b=>b.onclick=list[+b.dataset.i][4]); };
-  draw('kpis',K); draw('kpis2',K2);
+  draw('kpis',K); draw('kpis2',K2); $('kpis').insertAdjacentHTML('afterbegin',compCard());
 }
 let AB=false;
 
@@ -1250,10 +1258,15 @@ function gridPaste(e){
 ['tbody','ctbody'].forEach(id=>{ const tb=$(id); tb.addEventListener('keydown',gridKeys); tb.addEventListener('paste',gridPaste); tb.addEventListener('input',e=>{ if(e.target.tagName==='TEXTAREA') autosize(tb); }); });
 
 function renderRecon(){
-  const act=DATA.filter(r=>r.st!=='CANCELADO'), canc=DATA.length-act.length, done=act.filter(r=>r.st==='Concluída').length, and=act.filter(r=>r.st==='Em andamento').length, ni=act.filter(r=>r.st==='Não iniciada').length, open=DATA.filter(OPEN);
+  const act=DATA.filter(r=>r.st!=='CANCELADO'), done=act.filter(r=>r.st==='Concluída').length, and=act.filter(r=>r.st==='Em andamento').length, ni=act.filter(r=>r.st==='Não iniciada').length, open=DATA.filter(OPEN);
   const late=open.filter(LATE).length, soon=open.filter(r=>!LATE(r)&&r.prazo&&r.prazo<=TODAY+7).length, rest=open.length-late-soon;
   const t=(n,l,c)=>`<span class="${c||''}"><b>${n}</b> ${l}</span>`, op=x=>`<span class="op">${x}</span>`;
-  $('recon').innerHTML=`<div class="eq">${t(DATA.length,'pendências','tot')}${op('=')}${t(done,'concluídas')}${op('+')}${t(canc,'canceladas')}${op('+')}${t(late,'vencidas')}${op('+')}${t(soon,'vencem em 7 dias')}${op('+')}${t(rest,'demais em aberto')}</div><div class="eq">${t(open.length,'em aberto','tot')}${op('=')}${t(late,'vencidas')}${op('+')}${t(soon,'vencem em 7 dias')}${op('+')}${t(rest,'demais')}${op('=')}${t(and,'em andamento')}${op('+')}${t(ni,'não iniciadas')}</div>`;
+  $('recon').innerHTML=`<div class="eq">${t(open.length,'em aberto','tot')}${op('=')}${t(late,'vencidas')}${op('+')}${t(soon,'vencem em 7 dias')}${op('+')}${t(rest,'demais')}${op('=')}${t(and,'em andamento')}${op('+')}${t(ni,'não iniciadas')}</div>`;
+}
+function compCard(){
+  const act=DATA.filter(r=>r.st!=='CANCELADO'), canc=DATA.length-act.length, done=act.filter(r=>r.st==='Concluída').length, open=DATA.filter(OPEN);
+  const late=open.filter(LATE).length, soon=open.filter(r=>!LATE(r)&&r.prazo&&r.prazo<=TODAY+7).length, rest=open.length-late-soon;
+  return `<div class="kpi comp"><div class="l">Composição do total</div><div class="tot">${DATA.length}<small> pendências</small></div><ul><li><span>=</span> <b>${done}</b> concluídas</li><li><span>+</span> <b>${canc}</b> canceladas</li><li><span>+</span> <b>${late}</b> vencidas</li><li><span>+</span> <b>${soon}</b> vencem em 7 dias</li><li><span>+</span> <b>${rest}</b> demais em aberto</li></ul></div>`;
 }
 /* ---------- filtros com caixas de seleção (varias opcoes) ---------- */
 function selArr(v){ return Array.isArray(v)?v:(v?[v]:[]); }
