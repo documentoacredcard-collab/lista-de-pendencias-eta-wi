@@ -487,7 +487,11 @@ table.xl .ed:focus{background-color:var(--surface)}
 table.xl .ed:hover:not(select){background-image:none;background-color:color-mix(in srgb,var(--accent) 7%,var(--surface))}.dwrap em{font-size:10px;letter-spacing:.02em;text-align:center;line-height:1.2}
 .dwrap{padding:3px 2px;border-radius:8px}
 .dwrap.t-ok{background:var(--ok-soft)}.dwrap.t-warn{background:var(--warn-soft)}.dwrap.t-bad{background:var(--bad-soft)}.dwrap.t-idle{background:var(--idle-soft)}
-</style>
+:root{--rc-violet:#7a4fd1}
+tr.r.rs-ok>td{--rc:var(--ok)}tr.r.rs-warn>td{--rc:var(--warn)}tr.r.rs-blue>td{--rc:var(--accent)}tr.r.rs-violet>td{--rc:var(--rc-violet)}tr.r.rs-bad>td{--rc:var(--bad)}tr.r.rs-idle>td{--rc:var(--idle)}
+table.tp tr.r[class*="rs-"]:not(.rs-none)>td,table.tc tr.r[class*="rs-"]:not(.rs-none)>td{background-color:color-mix(in srgb,var(--rc) 14%,var(--surface))!important;background-image:none!important}
+table.tp tr.r[class*="rs-"]:not(.rs-none):hover>td,table.tc tr.r[class*="rs-"]:not(.rs-none):hover>td{background-color:color-mix(in srgb,var(--rc) 22%,var(--surface))!important}
+table.tp tr.r[class*="rs-"]:not(.rs-none)>td:first-child,table.tc tr.r[class*="rs-"]:not(.rs-none)>td:first-child{box-shadow:inset 5px 0 0 var(--rc)}</style>
 
 <div class="wrap">
   <header class="hero">
@@ -763,7 +767,7 @@ const dlHtml=(id,list)=>`<datalist id="${id}">${list.map(v=>`<option value="${es
 function onEdit(e){
   const t=e.target; if(!t.classList||!t.classList.contains('ed')) return;
   let v=t.value; if(t.dataset.type==='date') v=v?iso2s(v):null; else v=v.replace(/\s+$/,'');
-  setField(t.dataset.kind,+t.dataset.id,t.dataset.k,v); rmHook(t,v);
+  setField(t.dataset.kind,+t.dataset.id,t.dataset.k,v); rmHook(t,v); { const tr0=t.closest('tr'), r0=(t.dataset.kind==='p'?DATA:COMPRAS).find(x=>x.id===+t.dataset.id); if(tr0&&r0) tr0.className=tr0.className.replace(/\brs-\S+/g,'').trim()+' '+rowCls(t.dataset.kind,r0); }
   if(t.tagName==='SELECT'){ t.className='ed '+toneCls(t.dataset.kind,t.dataset.k,t.value); } else { if(t.type==='date') t.classList.toggle('empty',!t.value); t.classList.add('saved'); } if(t.dataset.kind==='c') updAlert(t.closest('tr'));
 }
 function delClick(b,kind){
@@ -795,10 +799,10 @@ function renderTable(){
     const idc=`<td class="id"><button class="mini" data-exp="${r.id}" aria-label="Detalhes" aria-expanded="${open}">${open?'▾':'▸'}</button> ${r.id}${isAdded('p',r)?` <button class="mini del" data-del="${r.id}" title="Excluir item novo">×</button>`:''}</td>`;
     let h;
     if(EDIT){
-      h=`<tr class="r edit" data-id="${r.id}">${idc}<td>${eTxt('p',r,'disc','dl-disc')}</td><td class="pend">${eArea('p',r,'pend')}</td><td>${eArea('p',r,'sis')}</td><td>${rmCell(r,true)}</td><td>${eDate('p',r,'rmdt')}</td><td class="rmen">${enEdit(r)}</td><td>${eSel('p',r,'cls',['A','B','C','D'])}</td><td>${eSel('p',r,'pri',['Alta','Média','Baixa'])}</td><td>${eArea('p',r,'rc')}</td><td>${eDate('p',r,'prazo')}</td><td>${eDate('p',r,'ent')}</td><td class="dias">${diasCell(r)}</td><td>${eSel('p',r,'st',ORDER)}</td></tr>`;
+      h=`<tr class="r edit ${rowCls('p',r)}" data-id="${r.id}">${idc}<td>${eTxt('p',r,'disc','dl-disc')}</td><td class="pend">${eArea('p',r,'pend')}</td><td>${eArea('p',r,'sis')}</td><td>${rmCell(r,true)}</td><td>${eDate('p',r,'rmdt')}</td><td class="rmen">${enEdit(r)}</td><td>${eSel('p',r,'cls',['A','B','C','D'])}</td><td>${eSel('p',r,'pri',['Alta','Média','Baixa'])}</td><td>${eArea('p',r,'rc')}</td><td>${eDate('p',r,'prazo')}</td><td>${eDate('p',r,'ent')}</td><td class="dias">${diasCell(r)}</td><td>${eSel('p',r,'st',ORDER)}</td></tr>`;
     } else {
       const cls=ST[r.st]?.[1]||'t-idle', pc={Alta:'t-bad',Média:'t-warn',Baixa:'t-idle'}[r.pri]||'t-idle', cc=(r.cls==='A'||r.cls==='B')?'t-bad':(r.cls==='D'?'t-warn':'t-idle');
-      h=`<tr class="r" data-id="${r.id}">${idc}<td>${esc(r.disc)}</td><td class="pend"><div class="clamp">${esc(nice(r.pend))}</div></td><td>${esc(nice(r.sis))||'—'}</td><td class="dt">${rmCell(r,false)}</td><td class="dt">${fmtD(r.rmdt)}</td><td class="rmen">${enCell(r)}</td><td><span class="tag ${cc}">${esc(r.cls)||'—'}</span></td><td><span class="tag ${pc}">${esc(r.pri)||'—'}</span></td><td>${esc(r.rc)||'—'}</td><td class="dt">${fmtD(r.prazo)}</td><td class="dt">${fmtD(r.ent)}</td><td class="dias">${diasCell(r)}</td><td><span class="tag ${cls}">${esc(r.st)||'—'}</span></td></tr>`;
+      h=`<tr class="r ${rowCls('p',r)}" data-id="${r.id}">${idc}<td>${esc(r.disc)}</td><td class="pend"><div class="clamp">${esc(nice(r.pend))}</div></td><td>${esc(nice(r.sis))||'—'}</td><td class="dt">${rmCell(r,false)}</td><td class="dt">${fmtD(r.rmdt)}</td><td class="rmen">${enCell(r)}</td><td><span class="tag ${cc}">${esc(r.cls)||'—'}</span></td><td><span class="tag ${pc}">${esc(r.pri)||'—'}</span></td><td>${esc(r.rc)||'—'}</td><td class="dt">${fmtD(r.prazo)}</td><td class="dt">${fmtD(r.ent)}</td><td class="dias">${diasCell(r)}</td><td><span class="tag ${cls}">${esc(r.st)||'—'}</span></td></tr>`;
     }
     if(open&&EDIT){ h += `<tr class="det"><td colspan="${NC}">${detEdit(r)}</td></tr>`; }
     else if(open){
@@ -915,8 +919,8 @@ function detEdit(r){
   $('ctbody').innerHTML=rows.length?rows.map(r=>{
     const idc=`<td class="id">${r.id}${isAdded('c',r)?` <button class="mini del" data-del="${r.id}" title="Excluir item novo">×</button>`:''}</td>`;
     const al=`<td>${alertCell(r)}</td>`;
-    if(EDIT) return `<tr class="r edit" data-id="${r.id}">${idc}<td>${eTxt('c',r,'resp','dl-cresp')}</td><td class="pend">${eArea('c',r,'item')}</td><td>${eTxt('c',r,'rm')}</td><td>${eDate('c',r,'dt')}</td><td>${eTxt('c',r,'oc')}</td><td>${eDate('c',r,'dcomp')}</td><td>${eTxt('c',r,'nf')}</td><td>${eSel('c',r,'st',CORDER)}</td><td>${eDate('c',r,'prev')}</td><td>${alSel(r)}</td><td>${eArea('c',r,'obs')}</td></tr>`;
-    return `<tr class="r" data-id="${r.id}">${idc}<td>${esc(r.resp)}</td><td class="pend"><div class="clamp" title="${esc(r.item)}">${esc(nice(r.item))}</div></td><td class="dt">${esc(r.rm)||'—'}</td><td class="dt">${fmtD(r.dt)}</td><td class="dt">${esc(r.oc)||'—'}</td><td class="dt">${fmtD(r.dcomp)}</td><td class="dt">${esc(r.nf)||'—'}</td><td><span class="tag ${CST[r.st]?.[1]||'t-idle'}">${esc(r.st)}</span></td><td class="dt">${fmtD(r.prev)}</td>${al}<td>${esc(r.obs)||'—'}</td></tr>`;
+    if(EDIT) return `<tr class="r edit ${rowCls('c',r)}" data-id="${r.id}">${idc}<td>${eTxt('c',r,'resp','dl-cresp')}</td><td class="pend">${eArea('c',r,'item')}</td><td>${eTxt('c',r,'rm')}</td><td>${eDate('c',r,'dt')}</td><td>${eTxt('c',r,'oc')}</td><td>${eDate('c',r,'dcomp')}</td><td>${eTxt('c',r,'nf')}</td><td>${eSel('c',r,'st',CORDER)}</td><td>${eDate('c',r,'prev')}</td><td>${alSel(r)}</td><td>${eArea('c',r,'obs')}</td></tr>`;
+    return `<tr class="r ${rowCls('c',r)}" data-id="${r.id}">${idc}<td>${esc(r.resp)}</td><td class="pend"><div class="clamp" title="${esc(r.item)}">${esc(nice(r.item))}</div></td><td class="dt">${esc(r.rm)||'—'}</td><td class="dt">${fmtD(r.dt)}</td><td class="dt">${esc(r.oc)||'—'}</td><td class="dt">${fmtD(r.dcomp)}</td><td class="dt">${esc(r.nf)||'—'}</td><td><span class="tag ${CST[r.st]?.[1]||'t-idle'}">${esc(r.st)}</span></td><td class="dt">${fmtD(r.prev)}</td>${al}<td>${esc(r.obs)||'—'}</td></tr>`;
   }).join(''):'<tr><td colspan="12" class="empty">Nenhum material com esses filtros.</td></tr>';
   $('cmore').hidden=true; postRender('ctbody');
 }
@@ -1555,4 +1559,8 @@ function emptyMsg(){
   if(a.length && !DATA.some(r=>rmKey(r.rm))) return 'Nenhuma pendência tem RM preenchida ainda. Digite o número da RM na coluna RM de cada pendência (ele sugere as RMs da lista de material). Depois este filtro mostra as pendências daquela RM.';
   if(a.length) return 'Nenhuma pendência tem as RMs selecionadas. Digite a RM na coluna RM das pendências para ligá-las à lista de material.';
   return 'Nenhuma pendência com esses filtros.';
+}
+function rowCls(kind,r){
+  const m=kind==='p'?{'Concluída':'ok','Em andamento':'warn','Não iniciada':'blue','CANCELADO':'idle'}:{'Entregue na obra':'ok','Entrega prevista':'blue','Em cotação':'warn','Em aprovação':'violet','OC emitida':'violet','Sem RM':'bad','Aguardando fornecedor':'idle'};
+  return 'rs-'+(m[r.st]||'none');
 }</script>
