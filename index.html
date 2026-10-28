@@ -415,12 +415,6 @@ table.xl.tp textarea.ed,table.xl.tc textarea.ed{min-width:0!important}
 table.xl.tp select.ed,table.xl.tc select.ed{padding-right:14px;background-position:right 3px center;background-size:8px 5px}
 table.xl.tp input[type=date].ed,table.xl.tc input[type=date].ed{padding:7px 2px 7px 5px;font-size:12px}
 table.tp .tag,table.tc .tag{font-size:11px;padding:2px 7px;white-space:normal;line-height:1.3}
-table.tp th:nth-child(1){width:4.6%} table.tp th:nth-child(2){width:7.6%} table.tp th:nth-child(3){width:22.8%} table.tp th:nth-child(4){width:10%}
-table.tp th:nth-child(5){width:7.8%} table.tp th:nth-child(6){width:7.4%} table.tp th:nth-child(7){width:7.6%} table.tp th:nth-child(8){width:3.4%}
-table.tp th:nth-child(9){width:6.4%} table.tp th:nth-child(10){width:7.6%} table.tp th:nth-child(11){width:7.4%} table.tp th:nth-child(12){width:7.4%}
-table.tc th:nth-child(1){width:4%} table.tc th:nth-child(2){width:8%} table.tc th:nth-child(3){width:21.5%} table.tc th:nth-child(4){width:7.5%}
-table.tc th:nth-child(5){width:7.5%} table.tc th:nth-child(6){width:8%} table.tc th:nth-child(7){width:6.5%} table.tc th:nth-child(8){width:9.5%}
-table.tc th:nth-child(9){width:7.5%} table.tc th:nth-child(10){width:8%} table.tc th:nth-child(11){width:12%}
 .rmc{min-width:0}
 td.rmen{min-width:0}
 .mini{padding:0 5px}@media(max-width:1100px){table.tp,table.tc{min-width:1100px!important}.tablewrap{overflow-x:auto}}
@@ -448,7 +442,27 @@ tr.det .dl .full{grid-column:1/-1}.sgwrap{display:flex;flex-direction:column;gap
 .sg2 .sgsec h3{white-space:nowrap}
 @media(max-width:600px){.sg2{grid-template-columns:1fr}}
 .card.c8{display:flex;flex-direction:column}
-.card.c8 #disc{flex:1;display:flex;flex-direction:column;justify-content:space-between}</style>
+.card.c8 #disc{flex:1;display:flex;flex-direction:column;justify-content:space-between}thead.grp th{position:sticky;top:0;z-index:3;height:26px;padding:4px 6px!important;text-align:center;font:700 10.5px var(--body);letter-spacing:.12em;text-transform:uppercase;border-left:2px solid var(--surface);cursor:default}
+thead.grp th:first-child{border-left:0}
+thead.grp th.g1{background:var(--accent);color:var(--on-accent)}
+thead.grp th.g2{background:#3b6fb6;color:#fff}
+thead.grp th.g3{background:#0e8aa8;color:#fff}
+thead.grp th.g4{background:#2f8f5b;color:#fff}
+thead.grp th.g5{background:var(--idle);color:#fff}
+:root[data-theme="dark"] thead.grp th.g3,:root[data-theme="dark"] thead.grp th.g4{color:#04121a}
+.tablewrap thead:not(.grp) th{top:26px!important;text-align:center}
+.tablewrap thead:not(.grp) th:nth-child(3),.tablewrap thead:not(.grp) th:nth-child(2){text-align:left}
+table.tp td,table.tc td{vertical-align:middle!important}
+table.xl.tp td,table.xl.tc td{vertical-align:middle}
+table.tp tbody tr.r:nth-child(odd) td:not([class*=t-]){background-image:linear-gradient(rgba(20,57,154,.025),rgba(20,57,154,.025))}
+table.tp td:nth-child(6),table.tp td:nth-child(7),table.tp td:nth-child(8),table.tp td:nth-child(9),table.tp td:nth-child(11),table.tp td:nth-child(12),
+table.tc td:nth-child(5),table.tc td:nth-child(7),table.tc td:nth-child(9),table.tc td:nth-child(10),table.tc td:nth-child(11){text-align:center}
+table.tp td:nth-child(6) .ed,table.tp td:nth-child(7) .ed,table.tp td:nth-child(8) .ed,table.tp td:nth-child(9) .ed,table.tp td:nth-child(11) .ed,table.tp td:nth-child(12) .ed,
+table.tc td:nth-child(5) .ed,table.tc td:nth-child(7) .ed,table.tc td:nth-child(9) .ed,table.tc td:nth-child(10) .ed,table.tc td:nth-child(11) .ed{text-align:center;text-align-last:center}
+table.tp td:nth-child(5),table.tc td:nth-child(4),table.tc td:nth-child(6){font-weight:500}
+table.xl.tp td.id,table.xl.tc td.id{text-align:center}
+tr.r:hover td{background-color:color-mix(in srgb,var(--accent) 5%,transparent)}
+.rmen .tag,.tc td:nth-child(11) .tag{display:inline-block}</style>
 
 <div class="wrap">
   <header class="hero">
@@ -847,7 +861,7 @@ function renderCResp(){
     return `<div class="row" data-r="${p}" style="grid-template-columns:110px 1fr 40px" title="${e} entregues, ${pv} previstas, ${c} em compra"><span class="lab">${p}</span><div class="bar" style="width:${t/34*100}%;min-width:20px"><span style="width:${e/t*100}%;background:var(--ok)"></span><span style="width:${pv/t*100}%;background:var(--accent)"></span><span style="width:${c/t*100}%;background:var(--warn)"></span></div><span class="num">${t}</span></div>`}).join('');
   $('cresp').querySelectorAll('.row').forEach(e=>e.onclick=()=>cset('resp',e.dataset.r));
 }
-const CCOLS=[['id','#'],['resp','Responsável'],['item','Material'],['rm','RM'],['dt','Data RM'],['oc','OC'],['nf','NF'],['st','Status'],['prev','Previsão'],['al','Alerta'],['obs','Observação']];
+const CCOLS=[['id','#'],['resp','Responsável'],['item','Material'],['rm','RM'],['dt','Data RM'],['oc','OC'],['dcomp','Data da compra'],['nf','NF'],['st','Status'],['prev','Data de entrega na obra'],['al','Alerta'],['obs','Observação']];
 $('cthead').innerHTML='<tr>'+CCOLS.map(c=>`<th data-k="${c[0]}">${c[1]}<span class="arr"></span></th>`).join('')+'</tr>';
 $('cthead').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k; cSortDir=cSortKey===k?-cSortDir:1; cSortKey=k; renderCTable();});
 /* ---------- lista de material: tabela editável ---------- */
@@ -860,7 +874,7 @@ const alertCell=r=>{ const a=alerta(r), ac=a==='Previsão vencida'?'t-bad':a==='
   return `<span class="tag ${ac}">${a}</span>${a==='Previsão vencida'&&r.prev?`<br><span class="late sm">há ${TODAY-r.prev} dias</span>`:''}`; };
 function alSel(r){ const a=alerta(r); const cls=a==='Previsão vencida'?'t-bad':a==='Chega em 7 dias'?'t-warn':a==='Entregue'?'t-ok':'t-idle'; const auto=altC(Object.assign({},r,{alOv:''}));
   return `<select class="ed ${cls}" data-kind="c" data-id="${r.id}" data-k="alOv" aria-label="Alerta"><option value=""${r.alOv?'':' selected'}>Auto · ${auto}</option>${ALERTAS.map(x=>`<option${r.alOv===x?' selected':''}>${x}</option>`).join('')}</select>`; }
-function updAlert(tr){ if(!tr) return; const r=COMPRAS.find(x=>x.id===+tr.dataset.id); const td=tr.children[9]; if(!r||!td) return; if(EDIT){ if(td.contains(document.activeElement)) return; td.innerHTML=alSel(r); } else td.innerHTML=alertCell(r); }
+function updAlert(tr){ if(!tr) return; const r=COMPRAS.find(x=>x.id===+tr.dataset.id); const td=tr.children[10]; if(!r||!td) return; if(EDIT){ if(td.contains(document.activeElement)) return; td.innerHTML=alSel(r); } else td.innerHTML=alertCell(r); }
 function enEdit(r){ const auto=enState(Object.assign({},r,{enOv:''})), cur=r.enOv||''; const k=enState(r); const cls=k==='Previsão vencida'?'t-bad':k==='Chega em 7 dias'?'t-warn':k==='Entregue'?'t-ok':'t-idle';
   const pv=rmItems(r.rm).map(c=>c.prev).filter(Boolean).sort((a,b)=>b-a)[0];
   return `<select class="ed ${cls}" data-kind="p" data-id="${r.id}" data-k="enOv" aria-label="Entrega da RM"><option value=""${cur?'':' selected'}>Auto · ${auto}</option>${['Previsão vencida','Chega em 7 dias','No prazo','Sem previsão','Entregue','RM fora da lista de material','Sem RM'].map(x=>`<option${cur===x?' selected':''}>${x}</option>`).join('')}</select>${pv?`<div class="note" style="padding:0 6px 4px">${fmtD(pv)}</div>`:''}`; }
@@ -876,16 +890,16 @@ function detEdit(r){
   $('ctbody').innerHTML=rows.length?rows.map(r=>{
     const idc=`<td class="id">${r.id}${isAdded('c',r)?` <button class="mini del" data-del="${r.id}" title="Excluir item novo">×</button>`:''}</td>`;
     const al=`<td>${alertCell(r)}</td>`;
-    if(EDIT) return `<tr class="r edit" data-id="${r.id}">${idc}<td>${eTxt('c',r,'resp','dl-cresp')}</td><td class="pend">${eArea('c',r,'item')}</td><td>${eTxt('c',r,'rm')}</td><td>${eDate('c',r,'dt')}</td><td>${eTxt('c',r,'oc')}</td><td>${eTxt('c',r,'nf')}</td><td>${eSel('c',r,'st',CORDER)}</td><td>${eDate('c',r,'prev')}</td><td>${alSel(r)}</td><td>${eArea('c',r,'obs')}</td></tr>`;
-    return `<tr class="r" data-id="${r.id}">${idc}<td>${esc(r.resp)}</td><td class="pend"><div class="clamp" title="${esc(r.item)}">${esc(nice(r.item))}</div></td><td class="dt">${esc(r.rm)||'—'}</td><td class="dt">${fmtD(r.dt)}</td><td class="dt">${esc(r.oc)||'—'}</td><td class="dt">${esc(r.nf)||'—'}</td><td><span class="tag ${CST[r.st]?.[1]||'t-idle'}">${esc(r.st)}</span></td><td class="dt">${fmtD(r.prev)}</td>${al}<td>${esc(r.obs)||'—'}</td></tr>`;
-  }).join(''):'<tr><td colspan="11" class="empty">Nenhum material com esses filtros.</td></tr>';
+    if(EDIT) return `<tr class="r edit" data-id="${r.id}">${idc}<td>${eTxt('c',r,'resp','dl-cresp')}</td><td class="pend">${eArea('c',r,'item')}</td><td>${eTxt('c',r,'rm')}</td><td>${eDate('c',r,'dt')}</td><td>${eTxt('c',r,'oc')}</td><td>${eDate('c',r,'dcomp')}</td><td>${eTxt('c',r,'nf')}</td><td>${eSel('c',r,'st',CORDER)}</td><td>${eDate('c',r,'prev')}</td><td>${alSel(r)}</td><td>${eArea('c',r,'obs')}</td></tr>`;
+    return `<tr class="r" data-id="${r.id}">${idc}<td>${esc(r.resp)}</td><td class="pend"><div class="clamp" title="${esc(r.item)}">${esc(nice(r.item))}</div></td><td class="dt">${esc(r.rm)||'—'}</td><td class="dt">${fmtD(r.dt)}</td><td class="dt">${esc(r.oc)||'—'}</td><td class="dt">${fmtD(r.dcomp)}</td><td class="dt">${esc(r.nf)||'—'}</td><td><span class="tag ${CST[r.st]?.[1]||'t-idle'}">${esc(r.st)}</span></td><td class="dt">${fmtD(r.prev)}</td>${al}<td>${esc(r.obs)||'—'}</td></tr>`;
+  }).join(''):'<tr><td colspan="12" class="empty">Nenhum material com esses filtros.</td></tr>';
   $('cmore').hidden=true; postRender('ctbody');
 }
 $('ctbody').addEventListener('change',onEdit);
 $('ctbody').addEventListener('click',e=>{ const d=e.target.closest('[data-del]'); if(d) delClick(d,'c'); });
 $('addc').onclick=()=>{
   const id=Math.max(0,...COMPRAS.map(r=>r.id))+1;
-  const r={id,resp:'',item:'',rm:'',oc:'',nf:'',st:'Em cotação',dt:null,prev:null,obs:''};
+  const r={id,resp:'',item:'',rm:'',oc:'',nf:'',st:'Em cotação',dt:null,dcomp:null,prev:null,obs:''};
   COMPRAS.push(r); EDITS.addC.push(r); persist();
   Object.keys(CF).forEach(k=>CF[k]=''); cSortKey='id'; cSortDir=-1; EDIT=true; syncEdit(); csync();
   renderCTable(); refreshC();
@@ -1027,8 +1041,8 @@ function buildData(comp){
     const f=[]; if(CF.resp)f.push('Responsável: '+CF.resp); if(CF.st)f.push('Status: '+CF.st); if(CF.al)f.push('Alerta: '+CF.al); if(CF.q)f.push('Busca: "'+CF.q+'"');
     return { title:'LISTA DE MATERIAL', sheet:'Lista de Material', file:'Lista_de_Material_WI', stamp, hero:heroInfo(true), filters:f.length?f.join('  ·  '):'Todos os itens', comp:true,
       kpis:[['Itens',n,'14399A'],['Entregues na obra',ent,'2F8F5B'],['Em cotação',cot,'9A6700'],['Em aprovação / OC',apr,'3B6FB6'],['Previsão vencida',ven,'C21F26']],
-      cols:[['id','#',6,9],['resp','Responsável',16,24],['item','Material',60,90],['rm','RM',11,17],['dt','Data RM',12,18,'date'],['oc','OC',14,22],['nf','NF',10,16],['st','Status',20,28],['prev','Previsão',12,20,'date'],['al','Alerta',16,26],['obs','Observação',36,0]],
-      rows:rows.map(r=>[r.id,r.resp,r.item,r.rm||'',r.dt||null,r.oc||'',r.nf||'',r.st,r.prev||null,alerta(r),r.obs||'']) };
+      cols:[['id','#',6,9],['resp','Responsável',16,24],['item','Material',60,90],['rm','RM',11,17],['dt','Data RM',12,18,'date'],['oc','OC',14,22],['dcomp','Data da compra',12,18,'date'],['nf','NF',10,16],['st','Status',20,28],['prev','Data de entrega na obra',14,20,'date'],['al','Alerta',16,26],['obs','Observação',36,0]],
+      rows:rows.map(r=>[r.id,r.resp,r.item,r.rm||'',r.dt||null,r.oc||'',r.dcomp||null,r.nf||'',r.st,r.prev||null,alerta(r),r.obs||'']) };
   }
   const rows=filtered().slice().sort((a,b)=>a.id-b.id), n=rows.length;
   const dn=rows.filter(r=>r.st==='Concluída').length, ab=rows.filter(OPEN).length, ve=rows.filter(LATE).length, cr=rows.filter(r=>OPEN(r)&&(r.cls==='A'||r.cls==='B')).length;
@@ -1460,4 +1474,15 @@ function renderDonut(){
   $('donut').querySelectorAll('[data-pz]').forEach(e=>e.onclick=()=>setF('pz',e.dataset.pz));
   $('donut').querySelectorAll('[data-pr]').forEach(e=>e.onclick=()=>setF('pr',e.dataset.pr));
   $('donut').querySelectorAll('[data-cl]').forEach(e=>e.onclick=()=>setF('cl',e.dataset.cl));
-}</script>
+}
+/* ---------- grupos de colunas ---------- */
+(function(){
+  const mk=(id,groups)=>{ const th=$(id); if(!th||th.previousElementSibling&&th.previousElementSibling.classList.contains('grp')) return; th.insertAdjacentHTML('beforebegin','<thead class="grp"><tr>'+groups.map(g=>`<th colspan="${g[1]}" class="${g[2]}">${g[0]}</th>`).join('')+'</tr></thead>'); };
+  mk('thead',[['Pendência',4,'g1'],['Material (RM)',3,'g2'],['Classificação',2,'g3'],['Acompanhamento',3,'g4']]);
+  mk('cthead',[['Material',3,'g1'],['Solicitação (RM)',2,'g2'],['Compra',3,'g3'],['Entrega',3,'g4'],['Obs.',1,'g5']]);
+})();
+(function(){
+  const cg=(tbl,ws)=>{ if(!tbl||tbl.querySelector('colgroup')) return; tbl.insertAdjacentHTML('afterbegin','<colgroup>'+ws.map(x=>`<col style="width:${x}%">`).join('')+'</colgroup>'); };
+  cg($('thead').closest('table'),[4.6,7.6,22.8,10,7.8,7.4,7.6,3.4,6.4,7.6,7.4,7.4]);
+  cg($('cthead').closest('table'),[3.5,7,17,7,7.5,7.5,7.5,6.5,8,8.5,11.5,8.5]);
+})();</script>
