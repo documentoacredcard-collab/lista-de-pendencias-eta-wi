@@ -894,7 +894,7 @@ function renderCResp(){
     return `<div class="row" data-r="${p}" style="grid-template-columns:110px 1fr 40px" title="${e} entregues, ${pv} previstas, ${c} em compra"><span class="lab">${p}</span><div class="bar" style="width:${t/34*100}%;min-width:20px"><span style="width:${e/t*100}%;background:var(--ok)"></span><span style="width:${pv/t*100}%;background:var(--accent)"></span><span style="width:${c/t*100}%;background:var(--warn)"></span></div><span class="num">${t}</span></div>`}).join('');
   $('cresp').querySelectorAll('.row').forEach(e=>e.onclick=()=>cset('resp',e.dataset.r));
 }
-const CCOLS=[['id','#'],['resp','Responsável'],['item','Material'],['rm','RM'],['dt','Data RM'],['nf','NF'],['oc','OC'],['dcomp','Data da compra'],['prev','Data de previsão de entrega'],['dias','Dias para cumprir'],['chegou','Data que chegou na obra'],['st','Status'],['obs','Observação']];
+const CCOLS=[['id','#'],['resp','Responsável'],['item','Material'],['rm','RM'],['dt','Data RM'],['nf','NF'],['oc','OC'],['dcomp','Data da compra'],['prev','Data de previsão na obra'],['chegou','Data que chegou na obra'],['dias','Dias para cumprir'],['st','Status'],['obs','Observação']];
 $('cthead').innerHTML='<tr>'+CCOLS.map(c=>`<th data-k="${c[0]}">${c[1]}<span class="arr"></span></th>`).join('')+'</tr>';
 $('cthead').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k; cSortDir=cSortKey===k?-cSortDir:1; cSortKey=k; renderCTable();});
 /* ---------- lista de material: tabela editável ---------- */
@@ -923,8 +923,8 @@ function detEdit(r){
   $('ctbody').innerHTML=rows.length?rows.map(r=>{
     const idc=`<td class="id">${r.id}${isAdded('c',r)?` <button class="mini del" data-del="${r.id}" title="Excluir item novo">×</button>`:''}</td>`;
     const al=`<td>${alertCell(r)}</td>`;
-    if(EDIT) return `<tr class="r edit ${rowCls('c',r)}" data-id="${r.id}">${idc}<td>${eTxt('c',r,'resp','dl-cresp')}</td><td class="pend">${eArea('c',r,'item')}</td><td>${eTxt('c',r,'rm')}</td><td>${eDate('c',r,'dt')}</td><td>${eTxt('c',r,'nf')}</td><td>${eTxt('c',r,'oc')}</td><td>${eDate('c',r,'dcomp')}</td><td>${eDate('c',r,'prev')}</td><td class="dias">${diasCellC(r)}</td><td>${eDate('c',r,'chegou')}</td><td>${eSel('c',r,'st',CORDER)}</td><td>${eArea('c',r,'obs')}</td></tr>`;
-    return `<tr class="r ${rowCls('c',r)}" data-id="${r.id}">${idc}<td>${esc(r.resp)}</td><td class="pend"><div class="clamp" title="${esc(r.item)}">${esc(nice(r.item))}</div></td><td class="dt">${esc(r.rm)||'—'}</td><td class="dt">${fmtD(r.dt)}</td><td class="dt">${esc(r.nf)||'—'}</td><td class="dt">${esc(r.oc)||'—'}</td><td class="dt">${fmtD(r.dcomp)}</td><td class="dt">${fmtD(r.prev)}</td><td class="dias">${diasCellC(r)}</td><td class="dt">${fmtD(r.chegou)}</td><td><span class="tag ${CST[r.st]?.[1]||'t-idle'}">${esc(r.st)}</span></td><td>${esc(r.obs)||'—'}</td></tr>`;
+    if(EDIT) return `<tr class="r edit ${rowCls('c',r)}" data-id="${r.id}">${idc}<td>${eTxt('c',r,'resp','dl-cresp')}</td><td class="pend">${eArea('c',r,'item')}</td><td>${eTxt('c',r,'rm')}</td><td>${eDate('c',r,'dt')}</td><td>${eTxt('c',r,'nf')}</td><td>${eTxt('c',r,'oc')}</td><td>${eDate('c',r,'dcomp')}</td><td>${eDate('c',r,'prev')}</td><td>${eDate('c',r,'chegou')}</td><td class="dias">${diasCellC(r)}</td><td>${eSel('c',r,'st',CORDER)}</td><td>${eArea('c',r,'obs')}</td></tr>`;
+    return `<tr class="r ${rowCls('c',r)}" data-id="${r.id}">${idc}<td>${esc(r.resp)}</td><td class="pend"><div class="clamp" title="${esc(r.item)}">${esc(nice(r.item))}</div></td><td class="dt">${esc(r.rm)||'—'}</td><td class="dt">${fmtD(r.dt)}</td><td class="dt">${esc(r.nf)||'—'}</td><td class="dt">${esc(r.oc)||'—'}</td><td class="dt">${fmtD(r.dcomp)}</td><td class="dt">${fmtD(r.prev)}</td><td class="dt">${fmtD(r.chegou)}</td><td class="dias">${diasCellC(r)}</td><td><span class="tag ${CST[r.st]?.[1]||'t-idle'}">${esc(r.st)}</span></td><td>${esc(r.obs)||'—'}</td></tr>`;
   }).join(''):'<tr><td colspan="13" class="empty">Nenhum material com esses filtros.</td></tr>';
   $('cmore').hidden=true; postRender('ctbody');
 }
@@ -1077,8 +1077,8 @@ function buildData0(comp){
     const f=[]; if(CF.resp)f.push('Responsável: '+CF.resp); if(CF.st)f.push('Status: '+CF.st); if(CF.al)f.push('Alerta: '+CF.al); if(CF.q)f.push('Busca: "'+CF.q+'"');
     return { title:'LISTA DE MATERIAL', sheet:'Lista de Material', file:'Lista_de_Material_WI', stamp, hero:heroInfo(true), filters:f.length?f.join('  ·  '):'Todos os itens', comp:true,
       kpis:[['Itens',n,'14399A'],['Entregues na obra',ent,'2F8F5B'],['Em cotação',cot,'9A6700'],['Em aprovação / OC',apr,'3B6FB6'],['Previsão vencida',ven,'C21F26']],
-      cols:[['id','#',6,9],['resp','Responsável',16,24],['item','Material',60,90],['rm','RM',11,17],['dt','Data RM',12,18,'date'],['nf','NF',10,16],['oc','OC',14,22],['dcomp','Data da compra',12,18,'date'],['prev','Data de previsão de entrega',14,20,'date'],['dias','Dias p/ cumprir',14,18],['chegou','Data que chegou na obra',14,20,'date'],['st','Status',20,28],['obs','Observação',36,0]],
-      rows:rows.map(r=>[r.id,r.resp,r.item,r.rm||'',r.dt||null,r.nf||'',r.oc||'',r.dcomp||null,r.prev||null,diasExportC(r),r.chegou||null,r.st,r.obs||'']) };
+      cols:[['id','#',6,9],['resp','Responsável',16,24],['item','Material',60,90],['rm','RM',11,17],['dt','Data RM',12,18,'date'],['nf','NF',10,16],['oc','OC',14,22],['dcomp','Data da compra',12,18,'date'],['prev','Data de previsão na obra',14,20,'date'],['chegou','Data que chegou na obra',14,20,'date'],['dias','Dias p/ cumprir',14,18],['st','Status',20,28],['obs','Observação',36,0]],
+      rows:rows.map(r=>[r.id,r.resp,r.item,r.rm||'',r.dt||null,r.nf||'',r.oc||'',r.dcomp||null,r.prev||null,r.chegou||null,diasExportC(r),r.st,r.obs||'']) };
   }
   const rows=filtered().slice().sort((a,b)=>a.id-b.id), n=rows.length;
   const dn=rows.filter(r=>r.st==='Concluída').length, ab=rows.filter(OPEN).length, ve=rows.filter(LATE).length, cr=rows.filter(r=>OPEN(r)&&(r.cls==='A'||r.cls==='B')).length;
@@ -1520,7 +1520,7 @@ function renderDonut(){
 (function(){
   const cg=(tbl,ws)=>{ if(!tbl||tbl.querySelector('colgroup')) return; tbl.insertAdjacentHTML('afterbegin','<colgroup>'+ws.map(x=>`<col style="width:${x}%">`).join('')+'</colgroup>'); };
   cg($('thead').closest('table'),[3.4,5.4,14.2,6.6,5.2,5,7.6,2.6,6.2,5.6,5.4,6.2,6.6,5.2,14.8]);
-  cg($('cthead').closest('table'),[3.4,6.4,17,6.8,6.2,6.2,7.2,7.2,7.6,7.4,7.6,8.4,8.6]);
+  cg($('cthead').closest('table'),[3.4,6.4,17,6.8,6.2,6.2,7.2,7.2,7.6,7.4,8.2,8.2,8.6]);
 })();
 /* ---------- prazo: dias para cumprir e fases ---------- */
 function diasPrazo(r){ return (r.prazo&&OPEN(r))?(r.prazo-TODAY):null; }
@@ -1588,7 +1588,7 @@ function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r
   if(k==='st'&&v==='Entregue na obra'&&!r.chegou){ const d=nowSerial(); setField('c',id,'chegou',d); const di=tr.querySelector('input[data-k="chegou"]'); if(di){ di.value=s2iso(d); di.classList.remove('empty'); } toast('Data que chegou na obra preenchida com hoje. Você pode alterar para uma data anterior.'); }
   const c=tr.querySelector('.dias'); if(c) c.innerHTML=diasCellC(r); }; })();
 /* ---------- atualização automática ---------- */
-const BUILD_ID='20261028105946';
+const BUILD_ID='20261028110801';
 (function(){
   if(!/^https?:$/.test(location.protocol)) return;
   let shown=false;
