@@ -394,7 +394,7 @@ table.xl select.ed{min-width:156px}
       <div class="logos" id="brand"></div>
       <h1>Sistema de Pendências · WI</h1>
       <div class="sub">Água clarificada, EEAT, Adutora Azulão e sistemas associados · ETAM / ENEVA</div>
-      <div class="hprog" id="hprog"></div>
+      
     </div>
     </header>
 
@@ -413,9 +413,6 @@ table.xl select.ed{min-width:156px}
 
   <div class="view" id="v-pend">
   <section class="kpis k1" id="kpis"></section>
-  <div class="recon" id="recon"></div>
-  <div class="sublabel">Detalhe das pendências em aberto</div>
-  <section class="kpis kpis2" id="kpis2"></section>
 
   <section class="grid">
     <div class="card c4"><h2>Situação geral</h2><div class="donutwrap" id="donut"></div></div>
@@ -549,7 +546,7 @@ function renderKpis(){
     ['Classe A/B',crit,'das em aberto · impedem comissionar ou partir',crit?'bad':'ok',()=>{ F.st=''; F.pz=''; F.cl=''; F.q=''; AB=true; shown=60; syncControls(); renderTable(); }],
     ['Prioridade alta',alta,'das em aberto',alta?'warn':'',go('pr','Alta')]];
   const draw=(id,list)=>{ $(id).innerHTML=list.map((k,i)=>`<button class="kpi ${k[3]}" data-i="${i}" type="button"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="c">${k[2]}</div></button>`).join(''); $(id).querySelectorAll('.kpi').forEach(b=>b.onclick=list[+b.dataset.i][4]); };
-  draw('kpis',K); draw('kpis2',K2); $('kpis').insertAdjacentHTML('afterbegin',compCard());
+  draw('kpis',K); $('kpis').insertAdjacentHTML('afterbegin',compCard());
 }
 let AB=false;
 
@@ -1332,4 +1329,7 @@ function syncControls(){ $('q').value=F.q; MSLIST.forEach(m=>m.refresh()); }
 function csync(){ $('cq').value=CF.q; MSLIST.forEach(m=>m.refresh()); }
 
 var PROWS;
-(function(){ const wrap=$('tbody').closest('.tablewrap'); wrap.addEventListener('scroll',()=>{ if(shown<PROWS && wrap.scrollTop+wrap.clientHeight>=wrap.scrollHeight-260){ shown+=60; renderTable(); } },{passive:true}); })();</script>
+(function(){ const wrap=$('tbody').closest('.tablewrap'); wrap.addEventListener('scroll',()=>{ if(shown<PROWS && wrap.scrollTop+wrap.clientHeight>=wrap.scrollHeight-260){ shown+=60; renderTable(); } },{passive:true}); })();
+function renderHero(){}
+function renderRecon(){}
+</script>
