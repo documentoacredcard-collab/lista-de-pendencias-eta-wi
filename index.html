@@ -790,7 +790,7 @@ function renderTable(){
       ${r.etam?`<div class="full"><b>ETAM</b>${esc(r.etam)}</div>`:''}${r.eneva?`<div class="full"><b>ENEVA</b>${esc(r.eneva)}</div>`:''}
       ${r.ce?`<div class="full"><b>Comentários Eneva</b>${esc(r.ce)}</div>`:''}${r.cen?`<div class="full"><b>Comentário Engenharia Eneva</b>${esc(r.cen)}</div>`:''}</div></td></tr>`;
     }
-    return h; }).join('') : `<tr><td colspan="${NC}" class="empty">Nenhuma pendência com esses filtros.</td></tr>`;
+    return h; }).join('') : `<tr><td colspan="${NC}" class="empty">${emptyMsg()}</td></tr>`;
   $('more').hidden = true; postRender('tbody');
 }
 $('tbody').addEventListener('change',onEdit);
@@ -1461,7 +1461,7 @@ function goRM(key){
   csync(); renderCTable(); setTimeout(()=>{ const q=$('cq'); if(q&&q.scrollIntoView) q.scrollIntoView({behavior:'smooth',block:'center'}); },60);
 }
 $('tbody').addEventListener('click',e=>{ const a=e.target.closest('.rmlink'); if(!a) return; e.preventDefault(); e.stopPropagation(); goRM(a.dataset.rm); },true);
-makeMS({id:'fRm',key:'rm',label:'RM',store:F,opts:()=>{ const m={}; DATA.forEach(r=>{ const k=rmKey(r.rm); if(k) m[k]=(m[k]||0)+1; }); COMPRAS.forEach(c=>{ const k=rmKey(c.rm); if(k&&!(k in m)) m[k]=0; }); const lab={}; COMPRAS.forEach(c=>{ const k=rmKey(c.rm); if(k&&!lab[k]) lab[k]=c.rm.replace(/\s+/g,' ').trim(); }); DATA.forEach(r=>{ const k=rmKey(r.rm); if(k&&!lab[k]) lab[k]=String(r.rm).trim(); }); const o=Object.keys(m).sort().map(k=>({v:k,t:lab[k]||('RM '+k),n:m[k]})); o.push({v:'none',t:'Sem RM',n:DATA.filter(r=>!rmKey(r.rm)).length}); return o; },change:()=>{ shown=60; renderTable(); }});
+makeMS({id:'fRm',key:'rm',label:'RM',store:F,opts:()=>{ const m={}; DATA.forEach(r=>{ const k=rmKey(r.rm); if(k) m[k]=(m[k]||0)+1; }); COMPRAS.forEach(c=>{ const k=rmKey(c.rm); if(k&&!(k in m)) m[k]=0; }); const lab={}; COMPRAS.forEach(c=>{ const k=rmKey(c.rm); if(k&&!lab[k]) lab[k]=c.rm.replace(/\s+/g,' ').trim(); }); DATA.forEach(r=>{ const k=rmKey(r.rm); if(k&&!lab[k]) lab[k]=String(r.rm).trim(); }); const mc={}; COMPRAS.forEach(c=>{ const k=rmKey(c.rm); if(k) mc[k]=(mc[k]||0)+1; }); const o=Object.keys(m).sort((a,b)=>(m[b]-m[a])||a.localeCompare(b)).map(k=>({v:k,t:(lab[k]||('RM '+k))+(mc[k]?' · '+mc[k]+' mat.':''),n:m[k]})); o.push({v:'none',t:'Sem RM',n:DATA.filter(r=>!rmKey(r.rm)).length}); return o; },change:()=>{ shown=60; renderTable(); }});
 makeMS({id:'fEn',key:'en',label:'Entrega RM',store:F,opts:()=>EN_ORDER.map(v=>({v,t:v,n:DATA.filter(r=>enState(r)===v).length})),change:()=>{ shown=60; renderTable(); }});
 function renderDonut(){
   const act=DATA.filter(r=>r.st!=='CANCELADO'), T=act.length, can=DATA.length-T, open=DATA.filter(OPEN);
@@ -1504,4 +1504,10 @@ function fasePrazo(r){
 }
 function diasCell(r){ const f=fasePrazo(r), d=diasPrazo(r); const lab=d==null?f.n:(d<0?`${-d} d atrás`:d===0?'hoje':`${d} d`);
   return `<div class="dwrap ${f.c}"><b>${d==null?f.n:(d<0?'−'+(-d):d)}</b><em>${d==null?'':(d<0?'dias de atraso':d===0?'vence hoje':'dias restantes')}</em><span class="tag ${f.c}">${f.t}</span></div>`; }
-(function(){ const old=rmHook; rmHook=function(t,v){ old(t,v); if(t.dataset.kind==='p'&&(t.dataset.k==='prazo'||t.dataset.k==='ent'||t.dataset.k==='st')){ const r=DATA.find(x=>x.id===+t.dataset.id), tr=t.closest('tr'); const c=tr&&tr.querySelector('.dias'); if(r&&c) c.innerHTML=diasCell(r); } }; })();</script>
+(function(){ const old=rmHook; rmHook=function(t,v){ old(t,v); if(t.dataset.kind==='p'&&(t.dataset.k==='prazo'||t.dataset.k==='ent'||t.dataset.k==='st')){ const r=DATA.find(x=>x.id===+t.dataset.id), tr=t.closest('tr'); const c=tr&&tr.querySelector('.dias'); if(r&&c) c.innerHTML=diasCell(r); } }; })();
+function emptyMsg(){
+  const a=selArr(F.rm).filter(x=>x!=='none');
+  if(a.length && !DATA.some(r=>rmKey(r.rm))) return 'Nenhuma pendência tem RM preenchida ainda. Digite o número da RM na coluna RM de cada pendência (ele sugere as RMs da lista de material). Depois este filtro mostra as pendências daquela RM.';
+  if(a.length) return 'Nenhuma pendência tem as RMs selecionadas. Digite a RM na coluna RM das pendências para ligá-las à lista de material.';
+  return 'Nenhuma pendência com esses filtros.';
+}</script>
