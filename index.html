@@ -1548,6 +1548,7 @@ function stNote(r){
   if(t.dataset.kind!=='p') return; const k=t.dataset.k; if(k!=='prazo'&&k!=='ent'&&k!=='st') return;
   const id=+t.dataset.id, r=DATA.find(x=>x.id===id), tr=t.closest('tr'); if(!r||!tr) return;
   if(k==='st'&&v==='Concluída'&&!r.ent){ const d=nowSerial(); setField('p',id,'ent',d); const di=tr.querySelector('input[data-k="ent"]'); if(di){ di.value=s2iso(d); di.classList.remove('empty'); } toast('Data de entrega do serviço preenchida com hoje. Você pode alterar para uma data anterior.'); }
+  if(k==='ent'&&v&&r.st!=='Concluída'&&r.st!=='CANCELADO'){ setField('p',id,'st','Concluída'); const ss=tr.querySelector('select[data-k="st"]'); if(ss){ ss.value='Concluída'; ss.className='ed '+toneCls('p','st','Concluída'); } toast('Status alterado para Concluída, pois a data de entrega foi preenchida.'); }
   const c=tr.querySelector('.dias'); if(c) c.innerHTML=diasCell(r); }; })();
 function emptyMsg(){
   const a=selArr(F.rm).filter(x=>x!=='none');
