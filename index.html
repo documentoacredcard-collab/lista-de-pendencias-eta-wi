@@ -1600,7 +1600,7 @@ function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r
   if(k==='st'&&v==='Entregue na obra'&&!r.chegou){ const d=nowSerial(); setField('c',id,'chegou',d); const di=tr.querySelector('input[data-k="chegou"]'); if(di){ di.value=s2iso(d); di.classList.remove('empty'); } toast('Data que chegou na obra preenchida com hoje. Você pode alterar para uma data anterior.'); }
   const c=tr.querySelector('.dias'); if(c) c.innerHTML=diasCellC(r); }; })();
 /* ---------- atualização automática ---------- */
-const BUILD_ID='20261029093331';
+const BUILD_ID='20261029093555';
 (function(){
   if(!/^https?:$/.test(location.protocol)) return;
   let shown=false;
@@ -1699,7 +1699,7 @@ const BUILD_ID='20261029093331';
 <script>
 /* ---------- acesso: visitante só visualiza; login libera a edição; master gerencia acessos ---------- */
 (function(){
-  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"Aw4LIZZXUzOlC3Ohui+FQw==","hash":"42120450d2cc768815ade1528c3ea04c78d10bff3d83f3e40e0558fc9f077d82","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"68lKTP1y2Y40FFvEIAtrqw==","hash":"58520effdc56eb08617c647a071d80594bf3d9bd8ee90c9195a4d123e678ffe0","role":"viewer","nome":"Usuario Teste"}];
+  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"RWcHx4houQKsGmL/sMlEQg==","hash":"24045167c8b6ccb5d22f7b0cad506c46fd0bdc69d5dbeeeb33494bb4b57e3c87","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"QReWvmr2qseknHMnw6omJQ==","hash":"f6df106f2488fafb5efaa69af147697d1aa67d562fa2f1c777bffc4134d5cb9d","role":"viewer","nome":"Usuario Teste"}];
   if(!AUTH) return;                                   // sem usuários configurados: tudo liberado
   var REPO='documentoacredcard-collab/pendencias-wi', FILE='acessos.json', ITER=300000;
   var S=null; try{ S=JSON.parse(sessionStorage.getItem('wi_sess')||'null'); }catch(e){}
@@ -1746,6 +1746,7 @@ const BUILD_ID='20261029093331';
    +'@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill.st-view{color:#f2b84b}:root:not([data-theme="light"]) .pill.st-edit{color:#6fd39c}}'
    +':root[data-theme="dark"] .pill.st-view{color:#f2b84b}:root[data-theme="dark"] .pill.st-edit{color:#6fd39c}'
    +'.lgc .aviso{margin-top:14px;padding:10px 12px;border:1px solid #cf8a07;border-left:4px solid #cf8a07;border-radius:8px;background:rgba(207,138,7,.13);color:var(--ink);font:600 11.5px/1.45 var(--body);letter-spacing:.02em}'
+   +'.lgc .row button.ed{color:var(--accent)}'
    +'#loginbtn,#admbtn,#reqbtn{border-color:var(--accent);color:var(--accent);font-weight:600}';
   document.head.appendChild(st);
   var mkModal=function(html,wide){
@@ -1762,12 +1763,12 @@ const BUILD_ID='20261029093331';
     bar.insertBefore(pill,bar.firstChild);
     if(mestre){
       var adm=document.createElement('button'); adm.type='button'; adm.className='ghost'; adm.id='admbtn'; adm.textContent='Gerenciar acessos'; bar.appendChild(adm);
-      var M=mkModal('<h2>GERENCIAR ACESSOS</h2><p>CRIE LOGIN E SENHA PARA OUTRAS PESSOAS</p><div class="aviso" style="margin:0 0 6px">AVISO: SOMENTE JESSICA E CLEIDSON PODEM CRIAR ACESSOS. SE VOCÊ PRECISA DE UM ACESSO, ELES DEVEM SER PROCURADOS.</div>'
+      var M=mkModal('<h2 id="mtitle">GERENCIAR ACESSOS</h2><p>CRIE LOGIN E SENHA PARA OUTRAS PESSOAS</p><div class="aviso" style="margin:0 0 6px">AVISO: SOMENTE JESSICA E CLEIDSON PODEM CRIAR ACESSOS. SE VOCÊ PRECISA DE UM ACESSO, ELES DEVEM SER PROCURADOS.</div>'
         +'<label for="mn">NOME</label><input id="mn" required>'
         +'<label for="ml">LOGIN</label><input id="ml" name="novo-login" autocomplete="off" autocapitalize="none" spellcheck="false" required>'
         +'<label for="mp">SENHA (MÍNIMO 8 CARACTERES)</label><input id="mp" name="nova-senha" autocomplete="new-password" spellcheck="false" required minlength="8">'
         +'<label for="mr">PERFIL</label><select id="mr"><option value="admin">EDITA (ADMINISTRADOR)</option><option value="viewer">SOMENTE VISUALIZA</option></select>'
-        +'<button class="go" type="submit">CRIAR ACESSO</button><div class="err" id="mmsg" role="alert"></div>'
+        +'<button class="go" type="submit" id="mgo">CRIAR ACESSO</button><button type="button" class="mini2" id="mcancel" hidden>CANCELAR EDIÇÃO</button><div class="err" id="mmsg" role="alert"></div>'
         +'<h3>ACESSOS CRIADOS PELO SITE</h3><div id="mlst"></div>'
         +'<details id="mdet"><summary>CONFIGURAR PUBLICAÇÃO (TOKEN DO GITHUB)</summary><ol><li>No GitHub: Settings › Developer settings › Fine-grained tokens › Generate.</li><li>Repositório: somente <b>pendencias-wi</b>. Permissão: <b>Contents › Read and write</b>.</li><li>Cole o token abaixo e salve (fica só neste navegador).</li></ol><input id="mt" type="password" autocomplete="off" placeholder="TOKEN"><button type="button" class="mini2" id="mts">SALVAR TOKEN</button> <button type="button" class="mini2" id="mtc">REMOVER TOKEN</button></details>',true);
       var $m=function(id){ return M.m.querySelector('#'+id); }, msg=$m('mmsg');
@@ -1791,37 +1792,75 @@ const BUILD_ID='20261029093331';
         }
         throw new Error('CONFLITO AO GRAVAR. TENTE NOVAMENTE.');
       }
+      var ROWS={}, edit=null;
+      var setMode=function(u){
+        edit=u||null; var mp=$m('mp'), ml=$m('ml'), mr=$m('mr');
+        $m('mtitle').textContent=edit?'EDITAR ACESSO':'GERENCIAR ACESSOS';
+        $m('mgo').textContent=edit?'SALVAR ALTERAÇÕES':'CRIAR ACESSO'; $m('mcancel').hidden=!edit;
+        ml.required=!edit; mp.required=!edit; mp.minLength=edit?0:8;
+        ml.placeholder=edit?'NOVO LOGIN (EM BRANCO = MANTER)':''; mp.placeholder=edit?'NOVA SENHA (EM BRANCO = MANTER)':'';
+        $m('mn').value=edit?edit.nome:''; ml.value=''; mp.value='';
+        mr.value=edit&&edit.role==='viewer'?'viewer':'admin'; mr.disabled=!!(edit&&edit.role==='master');
+        if(edit) $m('mn').focus();
+      };
       async function lista(){
         var acc;
         if(tk()){ try{ var r=await api('GET'); if(r.status===200) acc=dec(await r.json()); }catch(e){} }
         if(!acc) acc=await loadAcc();
-        var box=$m('mlst'), us=(acc.users||[]);
-        box.innerHTML=us.length?us.map(function(u){ return '<div class="row"><b>'+esc(u.nome)+'</b><i>'+(u.role==='admin'?'EDITA':'SÓ VISUALIZA')+'</i><button type="button" data-id="'+u.id+'">REMOVER</button></div>'; }).join(''):'<div class="row"><i>NENHUM ACESSO CRIADO AINDA.</i></div>';
-        box.querySelectorAll('button[data-id]').forEach(function(b){ b.onclick=async function(){
+        var removed=acc.removed||[], over={}, fixo={}, list=[];
+        (acc.users||[]).forEach(function(u){ over[u.id]=1; }); AUTH.forEach(function(u){ fixo[u.id]=1; });
+        AUTH.forEach(function(u){ if(!over[u.id]&&removed.indexOf(u.id)<0) list.push(Object.assign({fixed:true},u)); });
+        (acc.users||[]).forEach(function(u){ list.push(Object.assign({fixed:!!fixo[u.id]},u)); });
+        ROWS={}; list.forEach(function(u){ ROWS[u.id]=u; });
+        var box=$m('mlst');
+        box.innerHTML=list.map(function(u){ return '<div class="row"><b>'+esc(u.nome)+'</b><i>'+(u.role==='master'?'MASTER':u.role==='admin'?'EDITA':'SÓ VISUALIZA')+(u.fixed?' · FIXO':'')+'</i><button type="button" class="ed" data-id="'+u.id+'">EDITAR</button>'+(u.fixed?'':'<button type="button" data-id="'+u.id+'" data-rm="1">REMOVER</button>')+'</div>'; }).join('');
+        box.querySelectorAll('button.ed').forEach(function(b){ b.onclick=function(){ say(''); setMode(ROWS[b.dataset.id]); M.m.scrollTop=0; M.f.scrollIntoView({block:'start'}); }; });
+        box.querySelectorAll('button[data-rm]').forEach(function(b){ b.onclick=async function(){
           if(!tk()){ say('CONFIGURE O TOKEN DO GITHUB PARA REMOVER.'); $m('mdet').open=true; return; }
           b.disabled=true; say('REMOVENDO...',true);
-          try{ var id=b.dataset.id; await gravar(function(a){ a.users=a.users.filter(function(x){return x.id!==id;}); return a; }); say('ACESSO REMOVIDO. VALE NO SITE EM ~1 MINUTO.',true); lista(); }
+          try{ var id=b.dataset.id; await gravar(function(a){ a.users=a.users.filter(function(x){return x.id!==id;}); return a; }); if(edit&&edit.id===id) setMode(null); say('ACESSO REMOVIDO. VALE NO SITE EM ~1 MINUTO.',true); lista(); }
           catch(e){ b.disabled=false; say(e.message); } }; });
       }
-      adm.onclick=function(){ M.m.hidden=false; say(''); lista(); if(!tk()) $m('mdet').open=true; setTimeout(function(){ $m('mn').focus(); },30); };
+      adm.onclick=function(){ M.m.hidden=false; say(''); setMode(null); lista(); if(!tk()) $m('mdet').open=true; setTimeout(function(){ $m('mn').focus(); },30); };
       $m('mts').onclick=function(){ var v=$m('mt').value.trim(); if(!v){ say('COLE O TOKEN.'); return; } try{ localStorage.setItem('wi_gh',v); }catch(e){} $m('mt').value=''; say('TOKEN SALVO NESTE NAVEGADOR.',true); lista(); };
       $m('mtc').onclick=function(){ try{ localStorage.removeItem('wi_gh'); }catch(e){} say('TOKEN REMOVIDO.',true); };
+      $m('mcancel').onclick=function(){ setMode(null); say(''); };
       M.f.addEventListener('submit',async function(ev){
-        ev.preventDefault(); var go=M.f.querySelector('.go'); say('');
-        var nome=$m('mn').value.trim(), login=$m('ml').value.trim().toLowerCase(), senha=$m('mp').value, role=$m('mr').value;
-        if(senha.length<8){ say('A SENHA PRECISA TER 8 OU MAIS CARACTERES.'); return; }
+        ev.preventDefault(); var go=$m('mgo'); say('');
+        var nome=$m('mn').value.trim(), login=$m('ml').value.trim().toLowerCase(), senha=$m('mp').value, role=$m('mr').value, label=go.textContent;
+        if(GERENTES.indexOf(S.u)<0){ say('SOMENTE JESSICA E CLEIDSON PODEM CRIAR OU ALTERAR ACESSOS.'); return; }
+        if((!edit||senha)&&senha.length<8){ say('A SENHA PRECISA TER 8 OU MAIS CARACTERES.'); return; }
         if(/[\s;]/.test(login)){ say('LOGIN SEM ESPAÇOS OU PONTO E VÍRGULA.'); return; }
         if(!tk()){ say('CONFIGURE ANTES O TOKEN DO GITHUB (ABAIXO).'); $m('mdet').open=true; return; }
-        go.disabled=true; go.textContent='CRIANDO...';
+        go.disabled=true; go.textContent=edit?'SALVANDO...':'CRIANDO...';
         try{
-          var id=await idOf(login);
-          if(AUTH.some(function(x){return x.id===id;})) throw new Error('ESSE LOGIN JÁ EXISTE.');
-          var salt=crypto.getRandomValues(new Uint8Array(16)), h=await hashOf(senha,salt);
-          await gravar(function(a){ if(a.users.some(function(x){return x.id===id;})) throw new Error('ESSE LOGIN JÁ EXISTE.'); a.users.push({id:id,salt:tob64(salt),hash:h,role:role,nome:nome}); return a; });
-          say('ACESSO CRIADO · LOGIN: '+login+' · SENHA: '+senha+' · VALE NO SITE EM ~1 MINUTO.',true);
-          $m('mn').value=''; $m('ml').value=''; $m('mp').value=''; lista();
-        }catch(e){ say(e.message||'FALHA AO CRIAR O ACESSO.'); }
-        go.disabled=false; go.textContent='CRIAR ACESSO';
+          if(edit){
+            var old=edit, newId=login?await idOf(login):old.id, ger=[];
+            for(var q=0;q<GERENTES.length;q++) ger.push(await idOf(GERENTES[q]));
+            if(ger.indexOf(old.id)>=0&&newId!==old.id) throw new Error('O LOGIN DE CLEIDSON E JESSICA NÃO PODE SER TROCADO (SÓ A SENHA E O NOME).');
+            if(newId===old.id&&!senha&&nome===old.nome&&(old.role==='master'||role===old.role)) throw new Error('NENHUMA ALTERAÇÃO INFORMADA.');
+            if(newId!==old.id&&AUTH.some(function(x){return x.id===newId;})) throw new Error('ESSE LOGIN JÁ EXISTE.');
+            var salt2=old.salt, h2=old.hash;
+            if(senha){ var sb=crypto.getRandomValues(new Uint8Array(16)); salt2=tob64(sb); h2=await hashOf(senha,sb); }
+            await gravar(function(a){
+              if(newId!==old.id&&a.users.some(function(x){return x.id===newId;})) throw new Error('ESSE LOGIN JÁ EXISTE.');
+              a.users=a.users.filter(function(x){return x.id!==old.id&&x.id!==newId;});
+              a.users.push({id:newId,salt:salt2,hash:h2,role:old.role==='master'?'master':role,nome:nome});
+              a.removed=a.removed.filter(function(x){return x!==newId;});
+              if(old.fixed&&newId!==old.id&&a.removed.indexOf(old.id)<0) a.removed.push(old.id);
+              return a; });
+            say('ALTERAÇÕES SALVAS'+(login?' · NOVO LOGIN: '+login:'')+(senha?' · NOVA SENHA: '+senha:'')+' · VALE NO SITE EM ~1 MINUTO.',true);
+            setMode(null); lista(); label='CRIAR ACESSO';
+          } else {
+            var id=await idOf(login);
+            if(AUTH.some(function(x){return x.id===id;})) throw new Error('ESSE LOGIN JÁ EXISTE.');
+            var salt=crypto.getRandomValues(new Uint8Array(16)), h=await hashOf(senha,salt);
+            await gravar(function(a){ if(a.users.some(function(x){return x.id===id;})) throw new Error('ESSE LOGIN JÁ EXISTE.'); a.removed=a.removed.filter(function(x){return x!==id;}); a.users.push({id:id,salt:tob64(salt),hash:h,role:role,nome:nome}); return a; });
+            say('ACESSO CRIADO · LOGIN: '+login+' · SENHA: '+senha+' · VALE NO SITE EM ~1 MINUTO.',true);
+            $m('mn').value=''; $m('ml').value=''; $m('mp').value=''; lista();
+          }
+        }catch(e){ say(e.message||'FALHA AO SALVAR O ACESSO.'); }
+        go.disabled=false; go.textContent=label;
       });
     }
     if(!mestre){
@@ -1848,7 +1887,7 @@ const BUILD_ID='20261029093331';
   btn.onclick=function(){ L.m.hidden=false; er.textContent=''; setTimeout(function(){ u.focus(); },30); };
   async function verifica(login,senha){
     var id=await idOf(login), acc=await loadAcc();
-    var lista=AUTH.concat(acc.users.filter(function(x){return acc.removed.indexOf(x.id)<0;}));
+    var vivo=function(x){ return acc.removed.indexOf(x.id)<0; }, lista=acc.users.filter(vivo).concat(AUTH.filter(vivo));   // acessos do site têm prioridade (permitem trocar senha dos fixos)
     var us=lista.find(function(x){return x.id===id;});
     var h=await hashOf(senha,us?b64(us.salt):new Uint8Array(16));
     return (us&&h===us.hash)?us:null;
