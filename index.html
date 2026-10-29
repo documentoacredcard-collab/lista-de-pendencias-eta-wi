@@ -515,7 +515,7 @@ table.tp tr.r[class*="rs-"]:not(.rs-none)>td:first-child,table.tc tr.r[class*="r
     <a id="tab-compras" href="#compras">Lista de material</a>
   </nav>
   <div class="hdr-r">
-      <span class="pill" id="stamp"></span>
+      <span class="pill" id="stamp" hidden style="display:none"></span>
       <button class="ghost" id="theme" type="button">Tema</button>
       <div class="menu"><button class="ghost" id="exp" type="button" aria-haspopup="true" aria-expanded="false">Exportar ▾</button><div class="menulist" id="expmenu" hidden><button type="button" id="expx">Excel (.xlsx)</button><button type="button" id="expp">PDF</button></div></div>
       <button class="primary" id="share" type="button">Compartilhar</button>
@@ -1600,7 +1600,7 @@ function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r
   if(k==='st'&&v==='Entregue na obra'&&!r.chegou){ const d=nowSerial(); setField('c',id,'chegou',d); const di=tr.querySelector('input[data-k="chegou"]'); if(di){ di.value=s2iso(d); di.classList.remove('empty'); } toast('Data que chegou na obra preenchida com hoje. Você pode alterar para uma data anterior.'); }
   const c=tr.querySelector('.dias'); if(c) c.innerHTML=diasCellC(r); }; })();
 /* ---------- atualização automática ---------- */
-const BUILD_ID='20261029091734';
+const BUILD_ID='20261029093331';
 (function(){
   if(!/^https?:$/.test(location.protocol)) return;
   let shown=false;
@@ -1699,11 +1699,11 @@ const BUILD_ID='20261029091734';
 <script>
 /* ---------- acesso: visitante só visualiza; login libera a edição; master gerencia acessos ---------- */
 (function(){
-  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"A8lYd3imsDZNt1vSjdqANA==","hash":"68d822c1e4fb65272967f922538db628fce83302ff3ca9a059ca15d1c23441cc","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"ibcbZr8NW0KSJCgak0m45w==","hash":"7c804ddcad378eabdb55db544bd44b6f1bcda8eaa3030d4d85d3e60f0d5d4131","role":"viewer","nome":"Usuario Teste"}];
+  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"Aw4LIZZXUzOlC3Ohui+FQw==","hash":"42120450d2cc768815ade1528c3ea04c78d10bff3d83f3e40e0558fc9f077d82","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"68lKTP1y2Y40FFvEIAtrqw==","hash":"58520effdc56eb08617c647a071d80594bf3d9bd8ee90c9195a4d123e678ffe0","role":"viewer","nome":"Usuario Teste"}];
   if(!AUTH) return;                                   // sem usuários configurados: tudo liberado
   var REPO='documentoacredcard-collab/pendencias-wi', FILE='acessos.json', ITER=300000;
   var S=null; try{ S=JSON.parse(sessionStorage.getItem('wi_sess')||'null'); }catch(e){}
-  var edita=!!(S&&S.u&&(S.role==='admin'||S.role==='master')), mestre=!!(S&&S.u&&S.role==='master');
+  var edita=!!(S&&S.u&&(S.role==='admin'||S.role==='master')), GERENTES=['cleidson','jessica'], mestre=edita&&GERENTES.indexOf(S.u)>=0;   // só estes logins criam acessos
   var bar=document.querySelector('.hdr-r'), g=function(id){ return document.getElementById(id); };
   var enc=new TextEncoder(), sub=crypto.subtle;
   var b64=function(s){ return Uint8Array.from(atob(s),function(c){return c.charCodeAt(0);}); };
@@ -1745,7 +1745,8 @@ const BUILD_ID='20261029091734';
    +'.pill.st-edit{background:rgba(47,143,91,.16);border-color:#2f8f5b;color:#1d6b40}'
    +'@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill.st-view{color:#f2b84b}:root:not([data-theme="light"]) .pill.st-edit{color:#6fd39c}}'
    +':root[data-theme="dark"] .pill.st-view{color:#f2b84b}:root[data-theme="dark"] .pill.st-edit{color:#6fd39c}'
-   +'#loginbtn,#admbtn{border-color:var(--accent);color:var(--accent);font-weight:600}';
+   +'.lgc .aviso{margin-top:14px;padding:10px 12px;border:1px solid #cf8a07;border-left:4px solid #cf8a07;border-radius:8px;background:rgba(207,138,7,.13);color:var(--ink);font:600 11.5px/1.45 var(--body);letter-spacing:.02em}'
+   +'#loginbtn,#admbtn,#reqbtn{border-color:var(--accent);color:var(--accent);font-weight:600}';
   document.head.appendChild(st);
   var mkModal=function(html,wide){
     var m=document.createElement('div'); m.className='lgm'; m.hidden=true; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true');
@@ -1757,14 +1758,14 @@ const BUILD_ID='20261029091734';
     return {m:m,f:m.querySelector('form'),close:close};
   };
   if(edita){
-    pill.textContent=(S.nome||S.u)+(mestre?' · MASTER':' · ADMINISTRADOR'); pill.className='pill st-edit';
+    pill.textContent=(S.nome||S.u)+(S.role==='master'?' · MASTER':' · ADMINISTRADOR'); pill.className='pill st-edit';
     bar.insertBefore(pill,bar.firstChild);
     if(mestre){
       var adm=document.createElement('button'); adm.type='button'; adm.className='ghost'; adm.id='admbtn'; adm.textContent='Gerenciar acessos'; bar.appendChild(adm);
-      var M=mkModal('<h2>GERENCIAR ACESSOS</h2><p>CRIE LOGIN E SENHA PARA OUTRAS PESSOAS</p>'
+      var M=mkModal('<h2>GERENCIAR ACESSOS</h2><p>CRIE LOGIN E SENHA PARA OUTRAS PESSOAS</p><div class="aviso" style="margin:0 0 6px">AVISO: SOMENTE JESSICA E CLEIDSON PODEM CRIAR ACESSOS. SE VOCÊ PRECISA DE UM ACESSO, ELES DEVEM SER PROCURADOS.</div>'
         +'<label for="mn">NOME</label><input id="mn" required>'
-        +'<label for="ml">LOGIN</label><input id="ml" autocapitalize="none" spellcheck="false" required>'
-        +'<label for="mp">SENHA (MÍNIMO 8 CARACTERES)</label><input id="mp" spellcheck="false" required minlength="8">'
+        +'<label for="ml">LOGIN</label><input id="ml" name="novo-login" autocomplete="off" autocapitalize="none" spellcheck="false" required>'
+        +'<label for="mp">SENHA (MÍNIMO 8 CARACTERES)</label><input id="mp" name="nova-senha" autocomplete="new-password" spellcheck="false" required minlength="8">'
         +'<label for="mr">PERFIL</label><select id="mr"><option value="admin">EDITA (ADMINISTRADOR)</option><option value="viewer">SOMENTE VISUALIZA</option></select>'
         +'<button class="go" type="submit">CRIAR ACESSO</button><div class="err" id="mmsg" role="alert"></div>'
         +'<h3>ACESSOS CRIADOS PELO SITE</h3><div id="mlst"></div>'
@@ -1823,6 +1824,11 @@ const BUILD_ID='20261029091734';
         go.disabled=false; go.textContent='CRIAR ACESSO';
       });
     }
+    if(!mestre){
+      var rq=document.createElement('button'); rq.type='button'; rq.className='ghost'; rq.id='reqbtn'; rq.textContent='Criar acesso'; bar.appendChild(rq);
+      var R=mkModal('<h2>CRIAR ACESSO</h2><p>AVISO IMPORTANTE</p><div class="aviso" style="margin:0">SOMENTE JESSICA E CLEIDSON PODEM CRIAR ACESSOS. SE VOCÊ PRECISA DE UM ACESSO, SOLICITE A ELES.</div><button class="go" type="button" id="reqok">ENTENDI</button>');
+      rq.onclick=function(){ R.m.hidden=false; }; R.m.querySelector('#reqok').onclick=R.close;
+    }
     var out=document.createElement('button'); out.type='button'; out.className='ghost'; out.id='logout'; out.textContent='Sair';
     out.onclick=function(){ try{ sessionStorage.removeItem('wi_sess'); }catch(e){} location.reload(); };
     bar.appendChild(out); return;
@@ -1836,7 +1842,7 @@ const BUILD_ID='20261029091734';
   var L=mkModal('<h2>ACESSO PARA EDIÇÃO</h2><p>ENTRE COM SEU LOGIN E SENHA</p>'
    +'<label for="lgu">LOGIN</label><input id="lgu" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>'
    +'<label for="lgp">SENHA</label><input id="lgp" name="password" type="password" autocomplete="current-password" required>'
-   +'<button class="go" type="submit">ENTRAR</button><div class="err" role="alert"></div>');
+   +'<button class="go" type="submit">ENTRAR</button><div class="err" role="alert"></div><div class="aviso">NÃO TEM ACESSO? SOMENTE JESSICA E CLEIDSON PODEM CRIAR ACESSOS. SOLICITE O SEU A UM DELES.</div>');
   L.f.setAttribute('autocomplete','on');
   var u=g('lgu'), p=g('lgp'), go=L.f.querySelector('.go'), er=L.f.querySelector('.err');
   btn.onclick=function(){ L.m.hidden=false; er.textContent=''; setTimeout(function(){ u.focus(); },30); };
