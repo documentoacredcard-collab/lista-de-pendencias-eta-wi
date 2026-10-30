@@ -1602,7 +1602,7 @@ function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r
 /* ---------- atualização automática ---------- */
 /* tira o ?v=... (usado só para furar o cache) do endereço, para o link ficar limpo */
 try{ if(/[?&]v=\d+/.test(location.search)) history.replaceState(null,'',location.pathname+location.hash); }catch(e){}
-const BUILD_ID='20261030112053';
+const BUILD_ID='20261030112441';
 (function(){
   if(!/^https?:$/.test(location.protocol)) return;
   let shown=false;
@@ -1701,7 +1701,7 @@ const BUILD_ID='20261030112053';
 <script>
 /* ---------- acesso: visitante só visualiza; login libera a edição; master gerencia acessos ---------- */
 (function(){
-  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"nq2iuZ8MwS8vTcMaf1fGrg==","hash":"85a62a727cffa99211b461b1d9335d9dc02d467ed312523a3830f33dda4cb156","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"SgkHuKCUkuRcO23fG42H+w==","hash":"55faf7d989fdc5d7c3ecde9351dc873b0badbebb8737b26382aeb983934b1c0b","role":"viewer","nome":"Usuario Teste"}];
+  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"XC0oj0xeVScHynZFYQtXHw==","hash":"c2f4d7393d71b5f1786c8e03dd8a6d7ef428a87c3fd3e664efed5cea38bd7dc1","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"hHMOHsNI+ciUUT2bCn/aIg==","hash":"a3531df6be4943816b6e8f4ea3ade6fbe2a416b2e31e4c3fec04d1c8128494dd","role":"viewer","nome":"Usuario Teste"},{"id":"2c5da9e7622d9a6129c71932bab7eb0e5332e16d0d26c69335ff6c4262515666","salt":"cGu76m3Wx6ipIEU1caCuiw==","hash":"2644842c4ae9f3927e89494a744d579cdaec2c92a90b03d12d37621de01daf8b","role":"admin","nome":"SIDNEY ARANTES"}];
   if(!AUTH) return;                                   // sem usuários configurados: tudo liberado
   var REPO='documentoacredcard-collab/lista-de-pendencias-eta-wi', FILE='acessos.json', ITER=300000;
   var S=null; try{ S=JSON.parse(sessionStorage.getItem('wi_sess')||'null'); }catch(e){}
@@ -1714,7 +1714,7 @@ const BUILD_ID='20261030112053';
   var idOf=async function(login){ return hex(await sub.digest('SHA-256',enc.encode('wi|'+login.trim().toLowerCase()))); };
   var hashOf=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']); return hex(await sub.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,256)); };
   var esc=function(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
-  var lastAcc=null, TOKBOX={"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055":{"salt":"a+ZZGv6oRQO6t3SXhJJ9Lw==","iv":"0CrTdohDgl0B1pWp","ct":"qvLAvMOp6Avl2ev/vn2fwSrYm5DdozdS+zDezFjrhtJuX0e/ctuhxTjqcjl9qQVYCNndn7Jx73EdGooDWVdRkzUclLs7h61stVywxwLNwhgJ2QdZBCwLYJJx+8el8di/OOsY7n/ZZljVGPN6UQ=="}};
+  var lastAcc=null, TOKBOX={"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055":{"salt":"TmmjW0DgEqIniaslsZe32g==","iv":"jAShKjh6YbDa71qm","ct":"4JZ4MZ0lglG0ug2mHUyakHpFadd5HigPrChV+x3K0BF2GLFp5yX9YbPO2f0jSw9+WjIttxcpbXEi5yZV1Dy/zOxgLR77TyXHzUvSuBz6DByelAgP/xvMROs/zdCl3V2Hnr7RB8jc3F0s+v/3Ew=="}};
   /* token do GitHub guardado CIFRADO com a senha de login de cleidson/jessica (AES-GCM, chave PBKDF2): ao entrar, o token é liberado sozinho */
   var tokKey=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']); return sub.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); };
   var sealTok=async function(pw,tok){ var salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12)), k=await tokKey(pw,salt); return {salt:tob64(salt),iv:tob64(iv),ct:tob64(new Uint8Array(await sub.encrypt({name:'AES-GCM',iv:iv},k,enc.encode(tok))))}; };
