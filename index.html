@@ -1602,7 +1602,7 @@ function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r
 /* ---------- atualização automática ---------- */
 /* tira o ?v=... (usado só para furar o cache) do endereço, para o link ficar limpo */
 try{ if(/[?&]v=\d+/.test(location.search)) history.replaceState(null,'',location.pathname+location.hash); }catch(e){}
-const BUILD_ID='20261029095053';
+const BUILD_ID='20261030112053';
 (function(){
   if(!/^https?:$/.test(location.protocol)) return;
   let shown=false;
@@ -1701,7 +1701,7 @@ const BUILD_ID='20261029095053';
 <script>
 /* ---------- acesso: visitante só visualiza; login libera a edição; master gerencia acessos ---------- */
 (function(){
-  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"2Xu5hf/NMauLcZV0R+PT6Q==","hash":"6e88fe18dec38c74837e75566456f2c22cb48aafec4433db6c72992ca7c62635","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"CZGeto0mv9Z1lGPiTOPMQA==","hash":"318422480196793918936266192c817b3d064c3e8ac5a15e6257a7602e36ab6b","role":"viewer","nome":"Usuario Teste"}];
+  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"nq2iuZ8MwS8vTcMaf1fGrg==","hash":"85a62a727cffa99211b461b1d9335d9dc02d467ed312523a3830f33dda4cb156","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"SgkHuKCUkuRcO23fG42H+w==","hash":"55faf7d989fdc5d7c3ecde9351dc873b0badbebb8737b26382aeb983934b1c0b","role":"viewer","nome":"Usuario Teste"}];
   if(!AUTH) return;                                   // sem usuários configurados: tudo liberado
   var REPO='documentoacredcard-collab/lista-de-pendencias-eta-wi', FILE='acessos.json', ITER=300000;
   var S=null; try{ S=JSON.parse(sessionStorage.getItem('wi_sess')||'null'); }catch(e){}
@@ -1714,9 +1714,14 @@ const BUILD_ID='20261029095053';
   var idOf=async function(login){ return hex(await sub.digest('SHA-256',enc.encode('wi|'+login.trim().toLowerCase()))); };
   var hashOf=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']); return hex(await sub.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,256)); };
   var esc=function(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
+  var lastAcc=null, TOKBOX={"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055":{"salt":"a+ZZGv6oRQO6t3SXhJJ9Lw==","iv":"0CrTdohDgl0B1pWp","ct":"qvLAvMOp6Avl2ev/vn2fwSrYm5DdozdS+zDezFjrhtJuX0e/ctuhxTjqcjl9qQVYCNndn7Jx73EdGooDWVdRkzUclLs7h61stVywxwLNwhgJ2QdZBCwLYJJx+8el8di/OOsY7n/ZZljVGPN6UQ=="}};
+  /* token do GitHub guardado CIFRADO com a senha de login de cleidson/jessica (AES-GCM, chave PBKDF2): ao entrar, o token é liberado sozinho */
+  var tokKey=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']); return sub.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); };
+  var sealTok=async function(pw,tok){ var salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12)), k=await tokKey(pw,salt); return {salt:tob64(salt),iv:tob64(iv),ct:tob64(new Uint8Array(await sub.encrypt({name:'AES-GCM',iv:iv},k,enc.encode(tok))))}; };
+  var openTok=async function(pw,o){ var k=await tokKey(pw,b64(o.salt)); return new TextDecoder().decode(await sub.decrypt({name:'AES-GCM',iv:b64(o.iv)},k,b64(o.ct))); };
   async function loadAcc(){                          // acessos criados pelo site (arquivo acessos.json do repositório)
-    try{ var r=await fetch(FILE+'?v='+Date.now(),{cache:'no-store'}); if(r.ok){ var j=await r.json(); return {users:j.users||[],removed:j.removed||[]}; } }catch(e){}
-    return {users:[],removed:[]};
+    try{ var r=await fetch(FILE+'?v='+Date.now(),{cache:'no-store'}); if(r.ok){ var j=await r.json(); return {users:j.users||[],removed:j.removed||[],tokens:j.tokens||{}}; } }catch(e){}
+    return {users:[],removed:[],tokens:{}};
   }
   var pill=document.createElement('span'); pill.className='pill'; pill.id='whoami';
   var st=document.createElement('style');
@@ -1772,10 +1777,10 @@ const BUILD_ID='20261029095053';
         +'<label for="mr">PERFIL</label><select id="mr"><option value="admin">EDITA (ADMINISTRADOR)</option><option value="viewer">SOMENTE VISUALIZA</option></select>'
         +'<button class="go" type="submit" id="mgo">CRIAR ACESSO</button><button type="button" class="mini2" id="mcancel" hidden>CANCELAR EDIÇÃO</button><div class="err" id="mmsg" role="alert"></div>'
         +'<h3>ACESSOS CRIADOS PELO SITE</h3><div id="mlst"></div>'
-        +'<details id="mdet"><summary>CONFIGURAR PUBLICAÇÃO (TOKEN DO GITHUB)</summary><ol><li>No GitHub: Settings › Developer settings › Fine-grained tokens › Generate.</li><li>Repositório: somente <b>lista-de-pendencias-eta-wi</b>. Permissão: <b>Contents › Read and write</b>.</li><li>Cole o token abaixo e salve (fica só neste navegador).</li></ol><input id="mt" type="password" autocomplete="off" placeholder="TOKEN"><button type="button" class="mini2" id="mts">SALVAR TOKEN</button> <button type="button" class="mini2" id="mtc">REMOVER TOKEN</button></details>',true);
+        +'',true);
       var $m=function(id){ return M.m.querySelector('#'+id); }, msg=$m('mmsg');
       var say=function(t,ok){ msg.textContent=t; msg.className='err'+(ok?' ok':''); };
-      var tk=function(){ try{ return localStorage.getItem('wi_gh')||''; }catch(e){ return ''; } };
+      var tk=function(){ try{ return sessionStorage.getItem('wi_gh')||''; }catch(e){ return ''; } };
       var dec=function(j){ return JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,''))))); };
       async function api(method,body){
         return fetch('https://api.github.com/repos/'+REPO+'/contents/'+FILE,{method:method,headers:{Authorization:'Bearer '+tk(),Accept:'application/vnd.github+json'},body:body?JSON.stringify(body):undefined});
@@ -1784,12 +1789,12 @@ const BUILD_ID='20261029095053';
         for(var t=0;t<2;t++){
           var r=await api('GET'), sha, acc={users:[],removed:[]};
           if(r.status===200){ var j=await r.json(); sha=j.sha; acc=dec(j); }
-          else if(r.status===401||r.status===403) throw new Error('TOKEN INVÁLIDO OU SEM PERMISSÃO DE ESCRITA.');
+          else if(r.status===401||r.status===403) throw new Error('CHAVE DE PUBLICAÇÃO INVÁLIDA OU SEM PERMISSÃO. AVISE CLEIDSON.');
           else if(r.status!==404) throw new Error('GITHUB RESPONDEU '+r.status+'.');
           acc.users=acc.users||[]; acc.removed=acc.removed||[]; acc=mut(acc);
           var p=await api('PUT',{message:'Atualiza acessos',content:btoa(unescape(encodeURIComponent(JSON.stringify(acc)))),sha:sha});
           if(p.ok) return acc;
-          if(p.status===401||p.status===403||p.status===404) throw new Error('TOKEN SEM PERMISSÃO DE ESCRITA NO REPOSITÓRIO.');
+          if(p.status===401||p.status===403||p.status===404) throw new Error('CHAVE DE PUBLICAÇÃO SEM PERMISSÃO DE ESCRITA. AVISE CLEIDSON.');
           if(p.status!==409&&p.status!==422) throw new Error('NÃO FOI POSSÍVEL GRAVAR ('+p.status+').');
         }
         throw new Error('CONFLITO AO GRAVAR. TENTE NOVAMENTE.');
@@ -1818,14 +1823,12 @@ const BUILD_ID='20261029095053';
         box.innerHTML=list.map(function(u){ return '<div class="row"><b>'+esc(u.nome)+'</b><i>'+(u.role==='master'?'MASTER':u.role==='admin'?'EDITA':'SÓ VISUALIZA')+(u.fixed?' · FIXO':'')+'</i><button type="button" class="ed" data-id="'+u.id+'">EDITAR</button>'+(u.fixed?'':'<button type="button" data-id="'+u.id+'" data-rm="1">REMOVER</button>')+'</div>'; }).join('');
         box.querySelectorAll('button.ed').forEach(function(b){ b.onclick=function(){ say(''); setMode(ROWS[b.dataset.id]); M.m.scrollTop=0; M.f.scrollIntoView({block:'start'}); }; });
         box.querySelectorAll('button[data-rm]').forEach(function(b){ b.onclick=async function(){
-          if(!tk()){ say('CONFIGURE O TOKEN EM "CONFIGURAR PUBLICAÇÃO" ABAIXO.'); return; }
+          if(!tk()){ say('SEM A CHAVE DE PUBLICAÇÃO NESTA SESSÃO. SAIA E ENTRE DE NOVO; SE PERSISTIR, PEÇA A CLEIDSON PARA REDEFINIR A SUA SENHA (EDITAR).'); return; }
           b.disabled=true; say('REMOVENDO...',true);
           try{ var id=b.dataset.id; await gravar(function(a){ a.users=a.users.filter(function(x){return x.id!==id;}); return a; }); if(edit&&edit.id===id) setMode(null); say('ACESSO REMOVIDO. VALE NO SITE EM ~1 MINUTO.',true); lista(); }
           catch(e){ b.disabled=false; say(e.message); } }; });
       }
       adm.onclick=function(){ M.m.hidden=false; say(''); setMode(null); lista(); setTimeout(function(){ $m('mn').focus(); },30); };
-      $m('mts').onclick=function(){ var v=$m('mt').value.trim(); if(!v){ say('COLE O TOKEN.'); return; } try{ localStorage.setItem('wi_gh',v); }catch(e){} $m('mt').value=''; say('TOKEN SALVO NESTE NAVEGADOR.',true); lista(); };
-      $m('mtc').onclick=function(){ try{ localStorage.removeItem('wi_gh'); }catch(e){} say('TOKEN REMOVIDO.',true); };
       $m('mcancel').onclick=function(){ setMode(null); say(''); };
       M.f.addEventListener('submit',async function(ev){
         ev.preventDefault(); var go=$m('mgo'); say('');
@@ -1833,7 +1836,7 @@ const BUILD_ID='20261029095053';
         if(GERENTES.indexOf(S.u)<0){ say('SOMENTE JESSICA E CLEIDSON PODEM CRIAR OU ALTERAR ACESSOS.'); return; }
         if((!edit||senha)&&senha.length<8){ say('A SENHA PRECISA TER 8 OU MAIS CARACTERES.'); return; }
         if(/[\s;]/.test(login)){ say('LOGIN SEM ESPAÇOS OU PONTO E VÍRGULA.'); return; }
-        if(!tk()){ say('CONFIGURE O TOKEN: ABRA "CONFIGURAR PUBLICAÇÃO" ABAIXO.'); return; }
+        if(!tk()){ say('SEM A CHAVE DE PUBLICAÇÃO NESTA SESSÃO. SAIA E ENTRE DE NOVO; SE PERSISTIR, PEÇA A CLEIDSON PARA REDEFINIR A SUA SENHA (EDITAR).'); return; }
         go.disabled=true; go.textContent=edit?'SALVANDO...':'CRIANDO...';
         try{
           if(edit){
@@ -1844,8 +1847,10 @@ const BUILD_ID='20261029095053';
             if(newId!==old.id&&AUTH.some(function(x){return x.id===newId;})) throw new Error('ESSE LOGIN JÁ EXISTE.');
             var salt2=old.salt, h2=old.hash;
             if(senha){ var sb=crypto.getRandomValues(new Uint8Array(16)); salt2=tob64(sb); h2=await hashOf(senha,sb); }
+            var reTok=(senha&&ger.indexOf(old.id)>=0&&tk())?await sealTok(senha,tk()):null;   // senha nova de cleidson/jessica: religa a chave de publicação a ela
             await gravar(function(a){
               if(newId!==old.id&&a.users.some(function(x){return x.id===newId;})) throw new Error('ESSE LOGIN JÁ EXISTE.');
+              if(senha&&ger.indexOf(old.id)>=0){ a.tokens=a.tokens||{}; if(reTok) a.tokens[old.id]=reTok; else delete a.tokens[old.id]; }   // senha mudou: a chave cifrada antiga não abre mais
               a.users=a.users.filter(function(x){return x.id!==old.id&&x.id!==newId;});
               a.users.push({id:newId,salt:salt2,hash:h2,role:old.role==='master'?'master':role,nome:nome});
               a.removed=a.removed.filter(function(x){return x!==newId;});
@@ -1888,7 +1893,7 @@ const BUILD_ID='20261029095053';
   var u=g('lgu'), p=g('lgp'), go=L.f.querySelector('.go'), er=L.f.querySelector('.err');
   btn.onclick=function(){ L.m.hidden=false; er.textContent=''; setTimeout(function(){ u.focus(); },30); };
   async function verifica(login,senha){
-    var id=await idOf(login), acc=await loadAcc();
+    var id=await idOf(login), acc=await loadAcc(); lastAcc=acc;
     var vivo=function(x){ return acc.removed.indexOf(x.id)<0; }, lista=acc.users.filter(vivo).concat(AUTH.filter(vivo));   // acessos do site têm prioridade (permitem trocar senha dos fixos)
     var us=lista.find(function(x){return x.id===id;});
     var h=await hashOf(senha,us?b64(us.salt):new Uint8Array(16));
@@ -1898,7 +1903,13 @@ const BUILD_ID='20261029095053';
     ev.preventDefault(); er.textContent=''; go.disabled=true; go.textContent='VERIFICANDO...';
     try{
       var us=await verifica(u.value,p.value);
-      if(us){ sessionStorage.setItem('wi_sess',JSON.stringify({u:u.value.trim().toLowerCase(),nome:us.nome,role:us.role})); location.reload(); return; }
+      if(us){
+        var lg=u.value.trim().toLowerCase();
+        if(GERENTES.indexOf(lg)>=0){                  // libera a chave de publicação cifrada com a própria senha
+          var cand=[lastAcc&&lastAcc.tokens&&lastAcc.tokens[us.id],TOKBOX&&TOKBOX[us.id]];
+          for(var c=0;c<cand.length;c++){ if(!cand[c]) continue; try{ sessionStorage.setItem('wi_gh',await openTok(p.value,cand[c])); break; }catch(e){} }
+        }
+        sessionStorage.setItem('wi_sess',JSON.stringify({u:lg,nome:us.nome,role:us.role})); location.reload(); return; }
       er.textContent='LOGIN OU SENHA INVÁLIDOS.'; p.value=''; p.focus();
     }catch(e){ er.textContent='NÃO FOI POSSÍVEL VERIFICAR NESTE NAVEGADOR.'; }
     go.disabled=false; go.textContent='ENTRAR';
