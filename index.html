@@ -1602,7 +1602,7 @@ function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r
 /* ---------- atualização automática ---------- */
 /* tira o ?v=... (usado só para furar o cache) do endereço, para o link ficar limpo */
 try{ if(/[?&]v=\d+/.test(location.search)) history.replaceState(null,'',location.pathname+location.hash); }catch(e){}
-const BUILD_ID='20261116083024';
+const BUILD_ID='20261116083856';
 (function(){
   if(!/^https?:$/.test(location.protocol)) return;
   let shown=false;
@@ -1701,7 +1701,7 @@ const BUILD_ID='20261116083024';
 <script>
 /* ---------- acesso: visitante só visualiza; login libera a edição; master gerencia acessos ---------- */
 (function(){
-  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"KYj+VLJ/UShv4HCHM4s7nA==","hash":"9a65adba9d1aff1cce693eabdb3115493226807304662e929d5a9e5895edc664","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"CJH2JchtepdW+GKnxrzcsQ==","hash":"9d08b3268d72180ef45486b86b4bbb85eb748e2067f593cd4e30f39d89abce5d","role":"viewer","nome":"Usuario Teste"},{"id":"2c5da9e7622d9a6129c71932bab7eb0e5332e16d0d26c69335ff6c4262515666","salt":"PylU4nQq0FzDgXt1AsPJQA==","hash":"b8afcbd66d0de1d5e428cfe25d657840475ddbfd4adad6dc2d466d82208a00d7","role":"admin","nome":"SIDNEY ARANTES"}];
+  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"m4uZQwvW0fEWw/ji+sVPZA==","hash":"b73ee3db89bf6eb107c63ae466fe7ea9f8c485670fbc2c1d1b0b711250415b56","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"nJeW/uzvQ8gih9hf+9TkNA==","hash":"8cee6a78f045890d63f7260893ff140f9a8e23f11980670d3eafe2b9070d58b9","role":"viewer","nome":"Usuario Teste"},{"id":"2c5da9e7622d9a6129c71932bab7eb0e5332e16d0d26c69335ff6c4262515666","salt":"x0FpcStbrPy4ukXsaLXZoQ==","hash":"670d5f436d2c15adbdd96fcfd042f7b3a98909852450eb527ec9c949f8b201ea","role":"admin","nome":"SIDNEY ARANTES"},{"id":"dfa6ef1f3658e948ac76484ab0bcffabaf35246e5fe527c83918a3c02b2a6cce","salt":"oCMTJh5yPb2bjhKP7YdAZg==","hash":"721e2b79e4bb60ec6662eafa04b7b8fbd9acee185a68c5c3c2e74578764c400f","role":"admin","nome":"FÁBIO COIMBRA"}];
   if(!AUTH) return;                                   // sem usuários configurados: tudo liberado
   var REPO='documentoacredcard-collab/lista-de-pendencias-eta-wi', FILE='acessos.json', ITER=300000;
   var S=null; try{ S=JSON.parse(sessionStorage.getItem('wi_sess')||'null'); }catch(e){}
@@ -1714,7 +1714,7 @@ const BUILD_ID='20261116083024';
   var idOf=async function(login){ return hex(await sub.digest('SHA-256',enc.encode('wi|'+login.trim().toLowerCase()))); };
   var hashOf=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']); return hex(await sub.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,256)); };
   var esc=function(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
-  var lastAcc=null, TOKBOX={"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055":{"salt":"05AK2nQvlqEiQXn9N2Ou5g==","iv":"e3xOQTa+AJ9hQFaf","ct":"u9tGwyEEMCkC6oAWHr1yr8aRMnNo36wQ8rOJFzD0Bhyio5l6rmA+GUKywPbYuKqYw+flQsabLgRZOKiErZCbolncq9tGIDKH7RnIVBB5IMgGwPWTG/p2If0X3CQEUYY3WYxWEIEFSYrzP1i5eg=="}};
+  var lastAcc=null, TOKBOX={"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055":{"salt":"t4Iuyr5mGSiBvftBF5Y8Bg==","iv":"CfJlYvgIrf0XzPkM","ct":"nm8vt5oAtFJALg1zuDs+SXhBvXulGv/nQrurpNFguFb9/pkOIedMTPGd4fjtQdWdw25MI65pe+tMWfPB2YdSLBCRimeWPsFO9vtoBMRdqeZJKaUsmHGjaoJFi/ma2s3Lf8/GepkKgq51B377IQ=="}};
   /* token do GitHub guardado CIFRADO com a senha de login de cleidson/jessica (AES-GCM, chave PBKDF2): ao entrar, o token é liberado sozinho */
   var tokKey=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']); return sub.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); };
   var sealTok=async function(pw,tok){ var salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12)), k=await tokKey(pw,salt); return {salt:tob64(salt),iv:tob64(iv),ct:tob64(new Uint8Array(await sub.encrypt({name:'AES-GCM',iv:iv},k,enc.encode(tok))))}; };
