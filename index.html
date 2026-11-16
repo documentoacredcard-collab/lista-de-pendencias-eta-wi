@@ -708,7 +708,7 @@ function renderResp(){
   $('resp').querySelectorAll('.row').forEach(e=>e.onclick=()=>setF('re',e.dataset.r));
 }
 
-const COLS = [['id','ID'],['disc','Disciplina'],['pend','Pendência'],['sis','Sistema'],['rm','RM'],['rmdt','Data RM'],['rmen','Entrega RM'],['cls','Cl.'],['pri','Prioridade'],['rc','Resp. correção'],['prazo','Prazo'],['ent','Data de entrega do serviço'],['dias','Dias para cumprir'],['st','Status'],['obs','Observações']];
+const COLS = [['id','ID'],['disc','Disciplina'],['pend','Pendência'],['sis','Sistema'],['rm','RM'],['rmdt','Data RM'],['rmen','Entrega RM'],['cls','Cl.'],['pri','Prioridade'],['rc','Resp. correção'],['prazo','Prazo'],['ent','Data de entrega do serviço'],['dias','Dias para cumprir'],['st','Status'],['etam','Comentário ETAM'],['eneva','Comentário ENEVA']];
 $('thead').innerHTML = '<tr>'+COLS.map(c=>`<th data-k="${c[0]}">${c[1]}<span class="arr"></span></th>`).join('')+'</tr>';
 $('thead').querySelectorAll('th').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; sortDir = sortKey===k? -sortDir : 1; sortKey=k; renderTable(); });
 
@@ -739,11 +739,6 @@ function nice(s){
 const LS_KEY='wi_edits_v2';
 let EDITS={pend:{},comp:{},addP:[],addC:[]}, EDIT=true, ALLDET=false;
 try{ const raw=localStorage.getItem(LS_KEY); if(raw) EDITS=Object.assign(EDITS,JSON.parse(raw)); }catch(e){}
-(function seedObs(){
-  /* Observações vindas da planilha: ETAM, ENEVA, Comentários Eneva, Comentário Engenharia Eneva */
-  DATA.forEach(r=>{ if(r.obs==null){ const t=[]; const a=(x,l)=>{ x=(x||'').trim(); if(x) t.push(l?l+': '+x:x); };
-    a(r.etam,'ETAM'); a(r.eneva,'ENEVA'); a(r.ce,'COMENTÁRIOS ENEVA'); a(r.cen,'COMENTÁRIO ENGENHARIA ENEVA'); r.obs=t.join('\n'); } });
-})();
 (function applyEdits(){
   DATA.forEach(r=>{ const o=EDITS.pend[r.id]; if(o) Object.assign(r,o); if(r.rm==null) r.rm=''; });
   COMPRAS.forEach(r=>{ const o=EDITS.comp[r.id]; if(o) Object.assign(r,o); });
@@ -815,15 +810,15 @@ function renderTable(){
     const idc=`<td class="id"><button class="mini" data-exp="${r.id}" aria-label="Detalhes" aria-expanded="${open}">${open?'▾':'▸'}</button> ${r.id}${isAdded('p',r)?` <button class="mini del" data-del="${r.id}" title="Excluir item novo">×</button>`:''}</td>`;
     let h;
     if(EDIT){
-      h=`<tr class="r edit ${rowCls('p',r)}" data-id="${r.id}">${idc}<td>${eTxt('p',r,'disc','dl-disc')}</td><td class="pend">${eArea('p',r,'pend')}</td><td>${eArea('p',r,'sis')}</td><td>${rmCell(r,true)}</td><td>${eDate('p',r,'rmdt')}</td><td class="rmen">${enEdit(r)}</td><td>${eSel('p',r,'cls',['A','B','C','D'])}</td><td>${eSel('p',r,'pri',['Alta','Média','Baixa'])}</td><td>${eArea('p',r,'rc')}</td><td>${eDate('p',r,'prazo')}</td><td>${eDate('p',r,'ent')}</td><td class="dias">${diasCell(r)}</td><td>${eSel('p',r,'st',ORDER)}</td><td class="obs">${eArea('p',r,'obs')}</td></tr>`;
+      h=`<tr class="r edit ${rowCls('p',r)}" data-id="${r.id}">${idc}<td>${eTxt('p',r,'disc','dl-disc')}</td><td class="pend">${eArea('p',r,'pend')}</td><td>${eArea('p',r,'sis')}</td><td>${rmCell(r,true)}</td><td>${eDate('p',r,'rmdt')}</td><td class="rmen">${enEdit(r)}</td><td>${eSel('p',r,'cls',['A','B','C','D'])}</td><td>${eSel('p',r,'pri',['Alta','Média','Baixa'])}</td><td>${eArea('p',r,'rc')}</td><td>${eDate('p',r,'prazo')}</td><td>${eDate('p',r,'ent')}</td><td class="dias">${diasCell(r)}</td><td>${eSel('p',r,'st',ORDER)}</td><td class="obs">${eArea('p',r,'etam')}</td><td class="obs">${eArea('p',r,'eneva')}</td></tr>`;
     } else {
       const cls=ST[r.st]?.[1]||'t-idle', pc={Alta:'t-bad',Média:'t-warn',Baixa:'t-idle'}[r.pri]||'t-idle', cc=(r.cls==='A'||r.cls==='B')?'t-bad':(r.cls==='D'?'t-warn':'t-idle');
-      h=`<tr class="r ${rowCls('p',r)}" data-id="${r.id}">${idc}<td>${esc(r.disc)}</td><td class="pend"><div class="clamp">${esc(nice(r.pend))}</div></td><td>${esc(nice(r.sis))||'—'}</td><td class="dt">${rmCell(r,false)}</td><td class="dt">${fmtD(r.rmdt)}</td><td class="rmen">${enCell(r)}</td><td><span class="tag ${cc}">${esc(r.cls)||'—'}</span></td><td><span class="tag ${pc}">${esc(r.pri)||'—'}</span></td><td>${esc(r.rc)||'—'}</td><td class="dt">${fmtD(r.prazo)}</td><td class="dt">${fmtD(r.ent)}</td><td class="dias">${diasCell(r)}</td><td><span class="tag ${cls}">${esc(r.st)||'—'}</span></td><td class="obs"><div class="clamp">${esc(r.obs)||'—'}</div></td></tr>`;
+      h=`<tr class="r ${rowCls('p',r)}" data-id="${r.id}">${idc}<td>${esc(r.disc)}</td><td class="pend"><div class="clamp">${esc(nice(r.pend))}</div></td><td>${esc(nice(r.sis))||'—'}</td><td class="dt">${rmCell(r,false)}</td><td class="dt">${fmtD(r.rmdt)}</td><td class="rmen">${enCell(r)}</td><td><span class="tag ${cc}">${esc(r.cls)||'—'}</span></td><td><span class="tag ${pc}">${esc(r.pri)||'—'}</span></td><td>${esc(r.rc)||'—'}</td><td class="dt">${fmtD(r.prazo)}</td><td class="dt">${fmtD(r.ent)}</td><td class="dias">${diasCell(r)}</td><td><span class="tag ${cls}">${esc(r.st)||'—'}</span></td><td class="obs"><div class="clamp">${esc(r.etam)||'—'}</div></td><td class="obs"><div class="clamp">${esc(r.eneva)||'—'}</div></td></tr>`;
     }
     if((open||ALLDET)&&EDIT){ h += `<tr class="det${ALLDET?' always':''}"><td colspan="${NC}">${detEdit(r)}</td></tr>`; }
     else if(ALLDET){
       h += `<tr class="det always"><td colspan="${NC}"><div class="dl dlc"><div><b>TAG / KKS</b>${esc(r.tag)||'—'}</div><div><b>Identificada por</b>${esc(r.ri)||'—'} em ${fmtD(r.di)}</div><div><b>Gera custo futuro?</b>${esc(r.custo)||'—'}</div><div><b>Status compra</b>${esc(r.compra)||'—'}</div>
-      ${r.etam?`<div class="full"><b>ETAM</b>${esc(r.etam)}</div>`:''}${r.eneva?`<div class="full"><b>ENEVA</b>${esc(r.eneva)}</div>`:''}
+      
       ${r.ce?`<div class="full"><b>Comentários Eneva</b>${esc(r.ce)}</div>`:''}${r.cen?`<div class="full"><b>Comentário Engenharia Eneva</b>${esc(r.cen)}</div>`:''}</div></td></tr>`;
     }
     else if(open){
@@ -832,7 +827,7 @@ function renderTable(){
       <div><b>Identificada por</b>${esc(r.ri)||'—'} em ${fmtD(r.di)}</div><div><b>Responsável pela correção</b>${esc(r.rc)||'—'}</div>
       <div><b>Data de entrega</b>${fmtD(r.ent)}</div><div><b>Gera custo futuro?</b>${esc(r.custo)||'—'}</div>
       <div><b>Status compra</b>${esc(r.compra)||'—'}</div>
-      ${r.etam?`<div class="full"><b>ETAM</b>${esc(r.etam)}</div>`:''}${r.eneva?`<div class="full"><b>ENEVA</b>${esc(r.eneva)}</div>`:''}
+      
       ${r.ce?`<div class="full"><b>Comentários Eneva</b>${esc(r.ce)}</div>`:''}${r.cen?`<div class="full"><b>Comentário Engenharia Eneva</b>${esc(r.cen)}</div>`:''}</div></td></tr>`;
     }
     return h; }).join('') : `<tr><td colspan="${NC}" class="empty">${emptyMsg()}</td></tr>`;
@@ -930,7 +925,7 @@ function enEdit(r){ const auto=enState(Object.assign({},r,{enOv:''})), cur=r.enO
   return `<select class="ed ${cls}" data-kind="p" data-id="${r.id}" data-k="enOv" aria-label="Entrega da RM"><option value=""${cur?'':' selected'}>Auto · ${auto}</option>${['Previsão vencida','Chega em 7 dias','No prazo','Sem previsão','Entregue','RM fora da lista de material','Sem RM'].map(x=>`<option${cur===x?' selected':''}>${x}</option>`).join('')}</select>${pv?`<div class="note" style="padding:0 6px 4px">${fmtD(pv)}</div>`:''}`; }
 function detEdit(r){
   const f=(l,h,full)=>`<div${full?' class="full"':''}><b>${l}</b>${h}</div>`;
-  return `<div class="dl">${f('TAG / KKS',eTxt('p',r,'tag'))}${f('Identificada por',eTxt('p',r,'ri'))}${f('Data de identificação',eDate('p',r,'di'))}${f('Data de entrega',eDate('p',r,'ent'))}${f('Gera custo futuro?',eSel('p',r,'custo',['Sim','Não']))}${f('Status compra',eTxt('p',r,'compra'))}${f('ETAM',eArea('p',r,'etam'),1)}${f('ENEVA',eArea('p',r,'eneva'),1)}${f('Comentários Eneva',eArea('p',r,'ce'),1)}${f('Comentário Engenharia Eneva',eArea('p',r,'cen'),1)}</div>`;
+  return `<div class="dl">${f('TAG / KKS',eTxt('p',r,'tag'))}${f('Identificada por',eTxt('p',r,'ri'))}${f('Data de identificação',eDate('p',r,'di'))}${f('Data de entrega',eDate('p',r,'ent'))}${f('Gera custo futuro?',eSel('p',r,'custo',['Sim','Não']))}${f('Status compra',eTxt('p',r,'compra'))}${f('Comentários Eneva',eArea('p',r,'ce'),1)}${f('Comentário Engenharia Eneva',eArea('p',r,'cen'),1)}</div>`;
 }function renderCTable(){
   const rows=cFilter();
   const val=r=>cSortKey==='al'?alerta(r):cSortKey==='dias'?diasPrazoC(r):r[cSortKey];
@@ -1103,8 +1098,8 @@ function buildData0(comp){
   if(F.pz)f.push('Prazo: '+({late:'vencidas','7':'vencem em 7 dias','30':'vencem em 30 dias',none:'sem prazo',rest:'demais em aberto',open:'todas em aberto'})[F.pz]); if(AB)f.push('Classe A/B abertas'); if(F.q)f.push('Busca: "'+F.q+'"');
   return { title:'LISTA DE PENDÊNCIAS', sheet:'Lista de Pendências', file:'Lista_de_Pendencias_WI', stamp, hero:heroInfo(false), filters:f.length?f.join('  ·  '):'Todos os itens', comp:false,
     kpis:[['Itens',n,'14399A'],['Concluídas',dn,'2F8F5B'],['Em aberto',ab,'9A6700'],['Vencidas',ve,'C21F26'],['Classe A/B abertas',cr,'C21F26']],
-    cols:[['id','#',6,8],['disc','Disciplina',16,19],['pend','Pendência',60,60],['sis','Sistema',22,19],['rm','RM',12,14],['rmdt','Data RM',12,16,'date'],['cls','Cl.',6,7],['pri','Prioridade',11,15],['rc','Resp. correção',18,21],['prazo','Prazo',12,17,'date'],['ent','Entrega do serviço',14,17,'date'],['dias','Dias p/ cumprir',12,13],['st','Status',14,19],['sit','Situação do prazo',18,21],['obs','Observações',34,0],['etam','Comentário ETAM',50,0]],
-    rows:rows.map(r=>[r.id,r.disc,r.pend,r.sis||'',r.rm||'',r.rmdt||null,r.cls,r.pri,r.rc||'',r.prazo||null,r.ent||null,diasExport(r),r.st,sitPrazo(r),r.obs||'',r.etam||'']) };
+    cols:[['id','#',6,8],['disc','Disciplina',16,19],['pend','Pendência',60,60],['sis','Sistema',22,19],['rm','RM',12,14],['rmdt','Data RM',12,16,'date'],['cls','Cl.',6,7],['pri','Prioridade',11,15],['rc','Resp. correção',18,21],['prazo','Prazo',12,17,'date'],['ent','Entrega do serviço',14,17,'date'],['dias','Dias p/ cumprir',12,13],['st','Status',14,19],['sit','Situação do prazo',18,21],['etam','Comentário ETAM',50,0],['eneva','Comentário ENEVA',50,0]],
+    rows:rows.map(r=>[r.id,r.disc,r.pend,r.sis||'',r.rm||'',r.rmdt||null,r.cls,r.pri,r.rc||'',r.prazo||null,r.ent||null,diasExport(r),r.st,sitPrazo(r),r.etam||'',r.eneva||'']) };
 }
 const serialToDate = s => new Date(Date.UTC(1899,11,30)+s*864e5);
 const nowStr = () => { const d=new Date(), p=x=>String(x).padStart(2,'0'); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; };
@@ -1532,12 +1527,12 @@ function renderDonut(){
 /* ---------- grupos de colunas ---------- */
 (function(){
   const mk=(id,groups)=>{ const th=$(id); if(!th||th.previousElementSibling&&th.previousElementSibling.classList.contains('grp')) return; th.insertAdjacentHTML('beforebegin','<thead class="grp"><tr>'+groups.map(g=>`<th colspan="${g[1]}" class="${g[2]}">${g[0]}</th>`).join('')+'</tr></thead>'); };
-  mk('thead',[['Pendência',4,'g1'],['Material (RM)',3,'g2'],['Classificação',2,'g3'],['Acompanhamento',5,'g4'],['Obs.',1,'g5']]);
+  mk('thead',[['Pendência',4,'g1'],['Material (RM)',3,'g2'],['Classificação',2,'g3'],['Acompanhamento',5,'g4'],['Comentários',2,'g5']]);
   mk('cthead',[['Material',3,'g1'],['Solicitação (RM)',2,'g2'],['Compra',7,'g3'],['Obs.',1,'g5']]);
 })();
 (function(){
   const cg=(tbl,ws)=>{ if(!tbl||tbl.querySelector('colgroup')) return; tbl.insertAdjacentHTML('afterbegin','<colgroup>'+ws.map(x=>`<col style="width:${x}%">`).join('')+'</colgroup>'); };
-  cg($('thead').closest('table'),[3.4,7,16.6,6.6,5.2,5,6,2.6,5.4,5.6,5.4,6.2,6.2,7.8,11]);
+  cg($('thead').closest('table'),[3.2,6.6,15.6,5.8,4.6,4.8,5.4,2.4,5,5,5,5.6,5.6,7,9.2,9.2]);
   cg($('cthead').closest('table'),[3.4,6.4,17,6.8,6.2,6.2,7.2,7.2,7.6,7.4,8.2,8.2,8.6]);
 })();
 /* ---------- prazo: dias para cumprir e fases ---------- */
@@ -1608,7 +1603,7 @@ function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r
 /* ---------- atualização automática ---------- */
 /* tira o ?v=... (usado só para furar o cache) do endereço, para o link ficar limpo */
 try{ if(/[?&]v=\d+/.test(location.search)) history.replaceState(null,'',location.pathname+location.hash); }catch(e){}
-const BUILD_ID='20261116085437';
+const BUILD_ID='20261116085652';
 (function(){
   if(!/^https?:$/.test(location.protocol)) return;
   let shown=false;
@@ -1707,7 +1702,7 @@ const BUILD_ID='20261116085437';
 <script>
 /* ---------- acesso: visitante só visualiza; login libera a edição; master gerencia acessos ---------- */
 (function(){
-  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"XPRFiP2NBoksYspm0bNxHw==","hash":"c4b4eed54726f77b713843866dd44e35ae368c487383a950ca9287b131030632","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"ZUmcnBn89O5KKUbv+yt2Aw==","hash":"04a8e1030d31a842bd34eaad2c224237422ec548795adefd33d651b86107cfb0","role":"viewer","nome":"Usuario Teste"},{"id":"2c5da9e7622d9a6129c71932bab7eb0e5332e16d0d26c69335ff6c4262515666","salt":"kbH7LZMTR5AM9xH+PrueOw==","hash":"c7161b08940c3de65903d44746ec3d93028002e4a28783620738c7ef526217d8","role":"admin","nome":"SIDNEY ARANTES"},{"id":"dfa6ef1f3658e948ac76484ab0bcffabaf35246e5fe527c83918a3c02b2a6cce","salt":"S9D+OzMJqPuTv8hAElBtgA==","hash":"51176dc13c03e6d39674dc1cd1d950abf419f07d273cd9431891f76ef0995df4","role":"admin","nome":"FÁBIO COIMBRA"}];
+  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"8BFemvxg0dmvzGcFiz329A==","hash":"a1c508b6cc33c9bcc8378f78af84d479dec2fb7e4fdc8c695a2851aec019b192","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"mritSKc8TM5OAZuFfSchVQ==","hash":"b82d298094a408006a72af8157357e0ba428b770dde1ea14f5d203b4c07b9b23","role":"viewer","nome":"Usuario Teste"},{"id":"2c5da9e7622d9a6129c71932bab7eb0e5332e16d0d26c69335ff6c4262515666","salt":"KYG6HgM8Se1djIEjLK52jA==","hash":"3c6896ace9298b2fee9aebb97f00481954c44fd789dda71d37a27d32a640a10e","role":"admin","nome":"SIDNEY ARANTES"},{"id":"dfa6ef1f3658e948ac76484ab0bcffabaf35246e5fe527c83918a3c02b2a6cce","salt":"3ucqJ+B6JjWhKkMhl2xueQ==","hash":"db7cd810528453f891f9ec6f7f1f684d3b36e2aa6eb272a2f07e4cb78f6387f2","role":"admin","nome":"FÁBIO COIMBRA"}];
   if(!AUTH) return;                                   // sem usuários configurados: tudo liberado
   var REPO='documentoacredcard-collab/lista-de-pendencias-eta-wi', FILE='acessos.json', ITER=300000;
   var S=null; try{ S=JSON.parse(sessionStorage.getItem('wi_sess')||'null'); }catch(e){}
@@ -1720,7 +1715,7 @@ const BUILD_ID='20261116085437';
   var idOf=async function(login){ return hex(await sub.digest('SHA-256',enc.encode('wi|'+login.trim().toLowerCase()))); };
   var hashOf=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']); return hex(await sub.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,256)); };
   var esc=function(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
-  var lastAcc=null, TOKBOX={"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055":{"salt":"aDMlinoSgq+qaGV/B57f1g==","iv":"xCYTPxNFUsqQZEUN","ct":"7ARiQGz3zBE81M0bd/wftUOw4mta7KEBTAtJQRw2pAbGWkBb8Li3scHxQhAaEUKc4eCEMroE83VwExbVZn74KEfrnZE7QSxla2hupOZ4zqQ10CC0K8k86A5QSHEFgs1N/UoTAXb4p3HpULSrUQ=="}};
+  var lastAcc=null, TOKBOX={"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055":{"salt":"6fkmqBavbyYZvr85mloxSg==","iv":"f+d7uNhCSuHGDZK+","ct":"UJPB9uJWFPg0b6H2ghifq8lQeWq2h0B/c+eI1xzGUo0vhTzl8ClY/lEE/rlY0TRJXELoTEjMao53XPZxAzFh6nvyqT1UwwO0dqKpQjR41sxWQX6pliJbASCqB3u+x88jYWtBdV3fUzYvl0e8FQ=="}};
   /* token do GitHub guardado CIFRADO com a senha de login de cleidson/jessica (AES-GCM, chave PBKDF2): ao entrar, o token é liberado sozinho */
   var tokKey=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']); return sub.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); };
   var sealTok=async function(pw,tok){ var salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12)), k=await tokKey(pw,salt); return {salt:tob64(salt),iv:tob64(iv),ct:tob64(new Uint8Array(await sub.encrypt({name:'AES-GCM',iv:iv},k,enc.encode(tok))))}; };
