@@ -742,8 +742,7 @@ try{ const raw=localStorage.getItem(LS_KEY); if(raw) EDITS=Object.assign(EDITS,J
 (function seedObs(){
   /* Observações vindas da planilha: ETAM, ENEVA, Comentários Eneva, Comentário Engenharia Eneva */
   DATA.forEach(r=>{ if(r.obs==null){ const t=[]; const a=(x,l)=>{ x=(x||'').trim(); if(x) t.push(l?l+': '+x:x); };
-    a(r.etam,'ETAM'); a(r.eneva,'ENEVA'); a(r.ce,'COMENTÁRIOS ENEVA'); a(r.cen,'COMENTÁRIO ENGENHARIA ENEVA'); r.obs=t.join('
-'); } });
+    a(r.etam,'ETAM'); a(r.eneva,'ENEVA'); a(r.ce,'COMENTÁRIOS ENEVA'); a(r.cen,'COMENTÁRIO ENGENHARIA ENEVA'); r.obs=t.join('\n'); } });
 })();
 (function applyEdits(){
   DATA.forEach(r=>{ const o=EDITS.pend[r.id]; if(o) Object.assign(r,o); if(r.rm==null) r.rm=''; });
@@ -1609,7 +1608,7 @@ function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r
 /* ---------- atualização automática ---------- */
 /* tira o ?v=... (usado só para furar o cache) do endereço, para o link ficar limpo */
 try{ if(/[?&]v=\d+/.test(location.search)) history.replaceState(null,'',location.pathname+location.hash); }catch(e){}
-const BUILD_ID='20261116085118';
+const BUILD_ID='20261116085437';
 (function(){
   if(!/^https?:$/.test(location.protocol)) return;
   let shown=false;
@@ -1708,7 +1707,7 @@ const BUILD_ID='20261116085118';
 <script>
 /* ---------- acesso: visitante só visualiza; login libera a edição; master gerencia acessos ---------- */
 (function(){
-  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"QssT4HY5vFb3U6mqcex+tQ==","hash":"54b7c09111c37467e9c6eafe3768f50b7ced75f7e3169f4b05e627e7044589fb","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"4aRpeWkQY072US+i61ymdA==","hash":"f51bcb1cca5daf5ef6c6a6aa096ab81216f5db5adb66463fb06b3593bf3e55d3","role":"viewer","nome":"Usuario Teste"},{"id":"2c5da9e7622d9a6129c71932bab7eb0e5332e16d0d26c69335ff6c4262515666","salt":"jUpFxuz73r/Us8Ai1vj8Fg==","hash":"722637c0715c3473e9d9fea11c0a6f49bfade73d70afec2c6194eb6f6970c22e","role":"admin","nome":"SIDNEY ARANTES"},{"id":"dfa6ef1f3658e948ac76484ab0bcffabaf35246e5fe527c83918a3c02b2a6cce","salt":"niNZakXHy0X1dgaTwt7EZw==","hash":"1bc5bd7d11c11e87abfb80354615a99b2e79fd1bfeee86a06a266bb29b0917cd","role":"admin","nome":"FÁBIO COIMBRA"}];
+  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"XPRFiP2NBoksYspm0bNxHw==","hash":"c4b4eed54726f77b713843866dd44e35ae368c487383a950ca9287b131030632","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"ZUmcnBn89O5KKUbv+yt2Aw==","hash":"04a8e1030d31a842bd34eaad2c224237422ec548795adefd33d651b86107cfb0","role":"viewer","nome":"Usuario Teste"},{"id":"2c5da9e7622d9a6129c71932bab7eb0e5332e16d0d26c69335ff6c4262515666","salt":"kbH7LZMTR5AM9xH+PrueOw==","hash":"c7161b08940c3de65903d44746ec3d93028002e4a28783620738c7ef526217d8","role":"admin","nome":"SIDNEY ARANTES"},{"id":"dfa6ef1f3658e948ac76484ab0bcffabaf35246e5fe527c83918a3c02b2a6cce","salt":"S9D+OzMJqPuTv8hAElBtgA==","hash":"51176dc13c03e6d39674dc1cd1d950abf419f07d273cd9431891f76ef0995df4","role":"admin","nome":"FÁBIO COIMBRA"}];
   if(!AUTH) return;                                   // sem usuários configurados: tudo liberado
   var REPO='documentoacredcard-collab/lista-de-pendencias-eta-wi', FILE='acessos.json', ITER=300000;
   var S=null; try{ S=JSON.parse(sessionStorage.getItem('wi_sess')||'null'); }catch(e){}
@@ -1721,7 +1720,7 @@ const BUILD_ID='20261116085118';
   var idOf=async function(login){ return hex(await sub.digest('SHA-256',enc.encode('wi|'+login.trim().toLowerCase()))); };
   var hashOf=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']); return hex(await sub.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,256)); };
   var esc=function(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
-  var lastAcc=null, TOKBOX={"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055":{"salt":"dVzejiw5GUorEyQK8648pg==","iv":"fwL39cZOEwldAIuh","ct":"uih6MkkP6ovFbZGsP5lpjDReoajhCrpplMtI3WFbo4IeqNwBU3taZY5vIHF3Xt9UCI0M8Zs0KZ4abIqPF6PtDfagkxAqwQEggSgb/HxaO3dC5FFKgCLJ3Mi7UTLrPbgmu8DTdGpyLWETQC+WGQ=="}};
+  var lastAcc=null, TOKBOX={"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055":{"salt":"aDMlinoSgq+qaGV/B57f1g==","iv":"xCYTPxNFUsqQZEUN","ct":"7ARiQGz3zBE81M0bd/wftUOw4mta7KEBTAtJQRw2pAbGWkBb8Li3scHxQhAaEUKc4eCEMroE83VwExbVZn74KEfrnZE7QSxla2hupOZ4zqQ10CC0K8k86A5QSHEFgs1N/UoTAXb4p3HpULSrUQ=="}};
   /* token do GitHub guardado CIFRADO com a senha de login de cleidson/jessica (AES-GCM, chave PBKDF2): ao entrar, o token é liberado sozinho */
   var tokKey=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']); return sub.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); };
   var sealTok=async function(pw,tok){ var salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12)), k=await tokKey(pw,salt); return {salt:tob64(salt),iv:tob64(iv),ct:tob64(new Uint8Array(await sub.encrypt({name:'AES-GCM',iv:iv},k,enc.encode(tok))))}; };
