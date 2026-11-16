@@ -543,7 +543,7 @@ table.tp tr.r[class*="rs-"]:not(.rs-none)>td:first-child,table.tc tr.r[class*="r
       <select id="fCl" aria-label="Classificação"></select>
       <select id="fPr" aria-label="Prioridade"></select>
       <select id="fRe" aria-label="Responsável"></select><select id="fRm" aria-label="RM"></select><select id="fEn" aria-label="Entrega da RM"></select>
-      <button class="ghost" id="clear" type="button">Limpar</button><button class="ghost" id="detbtn" type="button" aria-pressed="false">Detalhes: desligados</button><button class="ghost" id="addp" type="button" hidden>+ Novo item</button><label class="chk"><input type="checkbox" id="editp" checked> Edição</label><button class="ghost" id="resetp" type="button" hidden>Restaurar original</button>
+      <button class="ghost" id="clear" type="button">Limpar</button><button class="ghost" id="detbtn" type="button" aria-pressed="false">Detalhes: desligados</button><button class="ghost" id="addp" type="button" hidden>+ Novo item</button><label class="chk"><input type="checkbox" id="editp" checked> Edição</label><button class="ghost" id="expp2" type="button">Exportar planilha</button><button class="ghost" id="resetp" type="button" hidden>Restaurar original</button>
       <span class="count" id="count"></span>
     </div>
     <div class="tablewrap"><table class="tp"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
@@ -1238,6 +1238,7 @@ $('exp').onclick=e=>{ e.stopPropagation(); const m=$('expmenu'); m.hidden=!m.hid
 document.addEventListener('click',()=>{ $('expmenu').hidden=true; $('exp').setAttribute('aria-expanded','false'); });
 addEventListener('keydown',e=>{ if(e.key==='Escape'){ $('expmenu').hidden=true; } });
 $('expx').onclick=()=>{ $('expmenu').hidden=true; exportExcel().catch(e=>toast('Erro ao gerar o Excel: '+(e&&e.message||e))); };
+$('expp2').onclick=()=>$('expx').click();
 $('expp').onclick=()=>{ $('expmenu').hidden=true; try{ Promise.resolve(exportPdf()).catch(e=>toast('Erro ao gerar o PDF: '+(e&&e.message||e))); }catch(e){ toast('Erro ao gerar o PDF: '+(e&&e.message||e)); } };
 
 
@@ -1602,7 +1603,7 @@ function diasExportC(r){ if(r.chegou||r.st==='Entregue na obra'){ if(r.chegou&&r
 /* ---------- atualização automática ---------- */
 /* tira o ?v=... (usado só para furar o cache) do endereço, para o link ficar limpo */
 try{ if(/[?&]v=\d+/.test(location.search)) history.replaceState(null,'',location.pathname+location.hash); }catch(e){}
-const BUILD_ID='20261116083856';
+const BUILD_ID='20261116085006';
 (function(){
   if(!/^https?:$/.test(location.protocol)) return;
   let shown=false;
@@ -1701,7 +1702,7 @@ const BUILD_ID='20261116083856';
 <script>
 /* ---------- acesso: visitante só visualiza; login libera a edição; master gerencia acessos ---------- */
 (function(){
-  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"m4uZQwvW0fEWw/ji+sVPZA==","hash":"b73ee3db89bf6eb107c63ae466fe7ea9f8c485670fbc2c1d1b0b711250415b56","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"nJeW/uzvQ8gih9hf+9TkNA==","hash":"8cee6a78f045890d63f7260893ff140f9a8e23f11980670d3eafe2b9070d58b9","role":"viewer","nome":"Usuario Teste"},{"id":"2c5da9e7622d9a6129c71932bab7eb0e5332e16d0d26c69335ff6c4262515666","salt":"x0FpcStbrPy4ukXsaLXZoQ==","hash":"670d5f436d2c15adbdd96fcfd042f7b3a98909852450eb527ec9c949f8b201ea","role":"admin","nome":"SIDNEY ARANTES"},{"id":"dfa6ef1f3658e948ac76484ab0bcffabaf35246e5fe527c83918a3c02b2a6cce","salt":"oCMTJh5yPb2bjhKP7YdAZg==","hash":"721e2b79e4bb60ec6662eafa04b7b8fbd9acee185a68c5c3c2e74578764c400f","role":"admin","nome":"FÁBIO COIMBRA"}];
+  var AUTH=[{"id":"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055","salt":"GntGVCCO5CcFR/a/Sx7y8g==","hash":"db728be03b6146cdca24345cf1efb3ba6354d000615d7d2d4607d763c70b997c","role":"master","nome":"Cleidson de Melo (Master)"},{"id":"1a11fda13d61709fac90124d11eafb12a9caaaef3697bc0b39e71f85c13e0860","salt":"/02g0NJHQB3YB6yQiaU8JQ==","hash":"dbcc14d02e736f8733d9b52583f82cd7e5b6c833628095f37f0c037d66b5af94","role":"viewer","nome":"Usuario Teste"},{"id":"2c5da9e7622d9a6129c71932bab7eb0e5332e16d0d26c69335ff6c4262515666","salt":"lsxmx3SuDT8pz7VEgSTuSQ==","hash":"6884216890707031635638305dfb702f1b46e985bced0779413d14c4ba7b8e52","role":"admin","nome":"SIDNEY ARANTES"},{"id":"dfa6ef1f3658e948ac76484ab0bcffabaf35246e5fe527c83918a3c02b2a6cce","salt":"98RBW+kpuOtQfKwKaAGAOQ==","hash":"0d1fb0c41f6c774f76df70740a4c8f8aee3f571633da9e0d90277a2dba9f72cb","role":"admin","nome":"FÁBIO COIMBRA"}];
   if(!AUTH) return;                                   // sem usuários configurados: tudo liberado
   var REPO='documentoacredcard-collab/lista-de-pendencias-eta-wi', FILE='acessos.json', ITER=300000;
   var S=null; try{ S=JSON.parse(sessionStorage.getItem('wi_sess')||'null'); }catch(e){}
@@ -1714,7 +1715,7 @@ const BUILD_ID='20261116083856';
   var idOf=async function(login){ return hex(await sub.digest('SHA-256',enc.encode('wi|'+login.trim().toLowerCase()))); };
   var hashOf=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']); return hex(await sub.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,256)); };
   var esc=function(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
-  var lastAcc=null, TOKBOX={"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055":{"salt":"t4Iuyr5mGSiBvftBF5Y8Bg==","iv":"CfJlYvgIrf0XzPkM","ct":"nm8vt5oAtFJALg1zuDs+SXhBvXulGv/nQrurpNFguFb9/pkOIedMTPGd4fjtQdWdw25MI65pe+tMWfPB2YdSLBCRimeWPsFO9vtoBMRdqeZJKaUsmHGjaoJFi/ma2s3Lf8/GepkKgq51B377IQ=="}};
+  var lastAcc=null, TOKBOX={"575e6f7f50c7ccba4c1a90a7a0e83e1d6980275fa24088802b1c1ade56148055":{"salt":"Rt/+9Azkkh29QAkIlZuNeA==","iv":"N6Al79nGl3jl2aCg","ct":"3wVneX+ApAgwJnLuipF0o/nn7ZZL/3gABlSoNpnoBVQKwDyFVtLOgD3tKoyX0RjOri7Zr+z2HSDoXBXvCb0Sq8HU4qZLn7dq2ay80jsxyYoSCq2a3P8/1nO80IZt0QPWJSixkxmR6sYxQIztAQ=="}};
   /* token do GitHub guardado CIFRADO com a senha de login de cleidson/jessica (AES-GCM, chave PBKDF2): ao entrar, o token é liberado sozinho */
   var tokKey=async function(pw,salt){ var km=await sub.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']); return sub.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:salt,iterations:ITER},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); };
   var sealTok=async function(pw,tok){ var salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12)), k=await tokKey(pw,salt); return {salt:tob64(salt),iv:tob64(iv),ct:tob64(new Uint8Array(await sub.encrypt({name:'AES-GCM',iv:iv},k,enc.encode(tok))))}; };
